@@ -6,7 +6,7 @@
 	import SummaryCards from '$lib/components/SummaryCards.svelte';
 	import ChartSection from '$lib/components/ChartSection.svelte';
 	import KeyTable from '$lib/components/KeyTable.svelte';
-	import { handleFiles, buildDailyUsage, buildKeyStats, parseAndStore } from '$lib/utils/parsing';
+	import { handleFiles, buildDailyUsage, buildKeyStats, buildTodayUsage, parseAndStore } from '$lib/utils/parsing';
 	import { buildBookmarkletCode } from '$lib/utils/bookmarklet';
 	import type { DashboardRow, FetchStatus } from '$lib/types/dashboard';
 
@@ -24,6 +24,7 @@
 	const zipCount = $derived([...new Set(allRows.map((r) => r.zipName))].length);
 	const { keyList, modelTotals, grandTotal } = $derived(buildKeyStats(allRows));
 	const { dailyData, dailyKeys } = $derived(buildDailyUsage(allRows));
+	const { todayData, todayKeys } = $derived(buildTodayUsage(allRows));
 
 	const detailRows = $derived(
 		keyList.map((key) => {
@@ -165,7 +166,7 @@
 
 	{#if allRows.length > 0}
 		<SummaryCards {keyList} {modelTotals} {grandTotal} />
-		<ChartSection {keyList} {modelTotals} {dailyData} {dailyKeys} />
+		<ChartSection {keyList} {modelTotals} {dailyData} {dailyKeys} {todayData} {todayKeys} />
 		<KeyTable {detailRows} />
 	{:else}
 		<div class="py-20 text-center text-muted-foreground/50">

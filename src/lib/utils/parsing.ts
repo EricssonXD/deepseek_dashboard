@@ -171,3 +171,55 @@ export function buildDailyUsage(
 
 	return { dailyData, dailyKeys: topKeys };
 }
+
+export function buildTodayUsage(
+	allRows: DashboardRow[],
+	topKeyCount = 6
+): { todayData: DailyKeyUsage[]; todayKeys: string[] } {
+	const keyCosts: Record<string, number> = {};
+	for (const row of allRows) {
+		if (row.rowType !== 'amount') continue;
+		const label = row.apiKeyName || row.apiKeyMasked;
+		keyCosts[label] = (keyCosts[label] || 0) + row.cost;
+	}
+	const topKeys = Object.entries(keyCosts)
+		.sort((a, b) => b[1] - a[1])
+		.slice(0, topKeyCount)
+		.map(([k]) => k);
+
+	const now = new Date();
+	const todayStr = now.toISOString().slice(0, 10);
+
+	const hourMap: Record<number, Record<string, number>> = {};
+	for (let h = 0; h < 24; h++) hourMap[h] = {};
+
+	for (const row of allRows) {
+		if (row.rowType !== 'amount') continue;
+		const label = row.apiKeyName || row.apiKeyMasked;
+		if (!topKeys.includes(label)) continue;
+		const date = row.utcDate.slice(0, 10);
+		if (date !== todayStr) continue;
+		const timePart = row.utcDate.slice(11, 13);
+		const hour = parseInt(timePart, 10);
+		if (isNaN(hour) || hour < 0 || hour > 23) continue;
+		if (!hourMap[hour][label]) hourMap[hour][label] = 0;
+		hourMap[hour][label] += row.cost;
+	}
+
+	const zeroKeys = Object.fromEntries(topKeys.map((k) => [k, 0]));
+	const cumulative: Record<string, number> = { ...zeroKeys };
+	const todayData: DailyKeyUsage[] = [];
+
+	for (let h = 0; h < 24; h++) {
+		for (const key of topKeys) {
+			cumulative[key] += hourMap[h]?.[key] || 0;
+		}
+		todayData.push({
+			date: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h)),
+			...cumulative
+		});
+	}
+
+	return { todayData, todayKeys: topKeys };
+}
+

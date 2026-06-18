@@ -11,13 +11,19 @@
 		keyList,
 		modelTotals,
 		dailyData = [],
-		dailyKeys = []
+		dailyKeys = [],
+		todayData = [],
+		todayKeys = []
 	}: {
 		keyList: KeySummary[];
 		modelTotals: Record<string, number>;
 		dailyData: DailyKeyUsage[];
 		dailyKeys: string[];
+		todayData: DailyKeyUsage[];
+		todayKeys: string[];
 	} = $props();
+
+	let dailyTab = $state<'today' | '30d'>('today');
 
 	const CHART_COLORS = [
 		'var(--color-chart-1)',
@@ -31,67 +37,41 @@
 		'var(--color-chart-9)'
 	];
 
-	// ── Bar: cost per API key (top 15) ──
+	// ── Bar ──
 	const topKeys = $derived(keyList.slice(0, 15));
-	const barData = $derived(
-		topKeys.map((k) => ({
-			name: k.apiKeyName || k.apiKeyMasked,
-			cost: k.cost
-		}))
-	);
-
-	const barConfig = $derived<Chart.ChartConfig>({
-		cost: { label: 'Cost (USD)', color: 'var(--color-primary)' }
-	});
-
+	const barData = $derived(topKeys.map((k) => ({ name: k.apiKeyName || k.apiKeyMasked, cost: k.cost })));
+	const barConfig = $derived<Chart.ChartConfig>({ cost: { label: 'Cost (USD)', color: 'var(--color-primary)' } });
 	const totalBarCost = $derived(barData.reduce((s, d) => s + d.cost, 0));
 
-	// ── Pie: cost per model ──
+	// ── Pie ──
 	const modelEntries = $derived(Object.entries(modelTotals).sort((a, b) => b[1] - a[1]));
-	const pieData = $derived(
-		modelEntries.map(([model, cost], i) => ({
-			model,
-			cost,
-			color: CHART_COLORS[i % CHART_COLORS.length]
-		}))
-	);
-
+	const pieData = $derived(modelEntries.map(([model, cost], i) => ({ model, cost, color: CHART_COLORS[i % CHART_COLORS.length] })));
 	const pieConfig = $derived<Chart.ChartConfig>({
 		cost: { label: 'Cost' },
-		...Object.fromEntries(
-			modelEntries.map(([model], i) => [
-				model,
-				{
-					label: model,
-					color: CHART_COLORS[i % CHART_COLORS.length]
-				}
-			])
-		)
+		...Object.fromEntries(modelEntries.map(([model], i) => [model, { label: model, color: CHART_COLORS[i % CHART_COLORS.length] }]))
 	});
-
 	const totalCost = $derived(modelEntries.reduce((s, [, c]) => s + c, 0));
 
-	// ── Line: daily consumption per API key ──
+	// ── 30-day line ──
 	const dailyConfig = $derived<Chart.ChartConfig>(
-		Object.fromEntries(
-			dailyKeys.map((key, i) => [
-				key,
-				{ label: key, color: CHART_COLORS[i % CHART_COLORS.length] }
-			])
-		)
+		Object.fromEntries(dailyKeys.map((key, i) => [key, { label: key, color: CHART_COLORS[i % CHART_COLORS.length] }]))
 	);
+	const dailySeries = $derived(dailyKeys.map((key, i) => ({ key, label: key, color: CHART_COLORS[i % CHART_COLORS.length] })));
 
-	const dailySeries = $derived(
-		dailyKeys.map((key, i) => ({
-			key,
-			label: key,
-			color: CHART_COLORS[i % CHART_COLORS.length]
-		}))
+	// ── Today line ──
+	const todayConfig = $derived<Chart.ChartConfig>(
+		Object.fromEntries(todayKeys.map((key, i) => [key, { label: key, color: CHART_COLORS[i % CHART_COLORS.length] }]))
 	);
+	const todaySeries = $derived(todayKeys.map((key, i) => ({ key, label: key, color: CHART_COLORS[i % CHART_COLORS.length] })));
+
+	const activeData = $derived(dailyTab === 'today' ? todayData : dailyData);
+	const activeKeys = $derived(dailyTab === 'today' ? todayKeys : dailyKeys);
+	const activeConfig = $derived(dailyTab === 'today' ? todayConfig : dailyConfig);
+	const activeSeries = $derived(dailyTab === 'today' ? todaySeries : dailySeries);
 </script>
 
 <div class="grid grid-cols-[repeat(auto-fit,minmax(400px,1fr))] gap-4 px-6 pb-6">
-	<!-- Bar Chart: Cost per API Key -->
+	<!-- Bar: Cost per API Key -->
 	<Card.Root>
 		<Card.Header>
 			<Card.Title class="text-sm text-foreground">Cost per API Key</Card.Title>
@@ -105,27 +85,14 @@
 						xScale={scaleBand().padding(0.25)}
 						x="name"
 						axis="x"
-						series={[
-							{
-								key: 'cost',
-								label: barConfig.cost.label,
-								color: barConfig.cost.color
-							}
-						]}
+						series={[{ key: 'cost', label: barConfig.cost.label, color: barConfig.cost.color }]}
 						props={{
-							bars: {
-								stroke: 'none',
-								rounded: 'all',
-								radius: 8,
-								motion: { type: 'tween', duration: 500, easing: cubicInOut }
-							},
+							bars: { stroke: 'none', rounded: 'all', radius: 8, motion: { type: 'tween', duration: 500, easing: cubicInOut } },
 							highlight: { area: { fill: 'none' } },
 							xAxis: { format: (d: string) => (d.length > 12 ? d.slice(0, 12) + '…' : d) }
 						}}
 					>
-						{#snippet tooltip()}
-							<Chart.Tooltip hideLabel />
-						{/snippet}
+						{#snippet tooltip()}<Chart.Tooltip hideLabel />{/snippet}
 					</BarChart>
 				</Chart.Container>
 			{:else}
@@ -135,18 +102,14 @@
 		<Card.Footer>
 			<div class="flex w-full items-start gap-2 text-sm">
 				<div class="grid gap-2">
-					<div class="flex items-center gap-2 leading-none font-medium">
-						Total: ${totalBarCost.toFixed(2)}
-					</div>
-					<div class="text-muted-foreground flex items-center gap-2 leading-none">
-						Across {barData.length} API key{barData.length !== 1 ? 's' : ''}
-					</div>
+					<div class="flex items-center gap-2 leading-none font-medium">Total: ${totalBarCost.toFixed(2)}</div>
+					<div class="text-muted-foreground flex items-center gap-2 leading-none">Across {barData.length} API key{barData.length !== 1 ? 's' : ''}</div>
 				</div>
 			</div>
 		</Card.Footer>
 	</Card.Root>
 
-	<!-- Pie Chart: Cost per Model -->
+	<!-- Pie: Cost per Model -->
 	<Card.Root class="flex flex-col">
 		<Card.Header class="items-center">
 			<Card.Title class="text-sm text-foreground">Cost per Model</Card.Title>
@@ -155,32 +118,12 @@
 		<Card.Content class="flex-1">
 			{#if pieData.length > 0}
 				<Chart.Container config={pieConfig} class="mx-auto max-w-1/2 aspect-square">
-					<PieChart
-						data={pieData}
-						key="model"
-						value="cost"
-						cRange={pieData.map((d) => d.color)}
-						c="color"
-						props={{
-							pie: {
-								motion: 'tween'
-							}
-						}}
-					>
-						{#snippet tooltip()}
-							<Chart.Tooltip hideLabel />
-						{/snippet}
+					<PieChart data={pieData} key="model" value="cost" cRange={pieData.map((d) => d.color)} c="color" props={{ pie: { motion: 'tween' } }}>
+						{#snippet tooltip()}<Chart.Tooltip hideLabel />{/snippet}
 						{#snippet arc({ props, visibleData, index })}
 							<Arc {...props}>
 								{#snippet children({ getArcTextProps })}
-									<Text
-										value={visibleData[index].cost}
-										{...getArcTextProps('outer', {
-											startOffset: '50%',
-											outerPadding: 10
-										})}
-										class="fill-foreground"
-									/>
+									<Text value={visibleData[index].cost} {...getArcTextProps('outer', { startOffset: '50%', outerPadding: 10 })} class="fill-foreground" />
 								{/snippet}
 							</Arc>
 						{/snippet}
@@ -191,47 +134,69 @@
 			{/if}
 		</Card.Content>
 		<Card.Footer class="flex-col gap-2 text-sm">
-			<div class="text-muted-foreground leading-none">
-				Total cost across {pieData.length} model{pieData.length !== 1 ? 's' : ''}
-			</div>
+			<div class="text-muted-foreground leading-none">Total cost across {pieData.length} model{pieData.length !== 1 ? 's' : ''}</div>
 		</Card.Footer>
 	</Card.Root>
 </div>
 
-<!-- Line Chart: Daily Consumption per API Key -->
-{#if dailyData.length > 0}
+<!-- Daily / Today consumption tabs -->
+{#if (dailyTab === '30d' && dailyData.length > 0) || (dailyTab === 'today' && todayData.length > 0)}
 	<div class="px-6 pb-6">
 		<Card.Root>
 			<Card.Header>
-				<Card.Title class="text-sm text-foreground">Daily Consumption per API Key</Card.Title>
-				<Card.Description>Daily cost across top {dailyKeys.length} keys</Card.Description>
+				<div class="flex items-center justify-between">
+					<div>
+						<Card.Title class="text-sm text-foreground">Consumption per API Key</Card.Title>
+						<Card.Description>
+							{#if dailyTab === 'today'}
+								Today — cumulative cost per key, per hour (UTC)
+							{:else}
+								Daily cost across top {dailyKeys.length} keys
+							{/if}
+						</Card.Description>
+					</div>
+					<div class="flex gap-1 rounded-md border border-border bg-muted p-0.5">
+						<button
+							class="rounded-sm px-3 py-1 text-xs font-medium transition-colors"
+							class:bg-background={dailyTab === 'today'}
+							class:text-foreground={dailyTab === 'today'}
+							class:text-muted-foreground={dailyTab !== 'today'}
+							onclick={() => { dailyTab = 'today'; }}
+						>
+							Today
+						</button>
+						<button
+							class="rounded-sm px-3 py-1 text-xs font-medium transition-colors"
+							class:bg-background={dailyTab === '30d'}
+							class:text-foreground={dailyTab === '30d'}
+							class:text-muted-foreground={dailyTab !== '30d'}
+							onclick={() => { dailyTab = '30d'; }}
+						>
+							Last 30 Days
+						</button>
+					</div>
+				</div>
 			</Card.Header>
 			<Card.Content>
-				<Chart.Container config={dailyConfig} class="max-h-[350px]">
+				<Chart.Container config={activeConfig} class="max-h-[350px]">
 					<LineChart
 						points={{ r: 4 }}
-						data={dailyData}
+						data={activeData}
 						x="date"
 						xScale={scaleUtc()}
 						axis="x"
-						series={dailySeries}
+						series={activeSeries}
 						props={{
 							spline: { curve: curveMonotoneX, motion: 'tween', strokeWidth: 2 },
-							highlight: {
-								points: {
-									motion: 'none',
-									r: 6
-								}
-							},
+							highlight: { points: { motion: 'none', r: 6 } },
 							xAxis: {
-								format: (v: Date) =>
-									v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+								format: dailyTab === 'today'
+									? (v: Date) => `${v.getUTCHours().toString().padStart(2, '0')}:00`
+									: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 							}
 						}}
 					>
-						{#snippet tooltip()}
-							<Chart.Tooltip hideLabel />
-						{/snippet}
+						{#snippet tooltip()}<Chart.Tooltip hideLabel />{/snippet}
 					</LineChart>
 				</Chart.Container>
 			</Card.Content>
@@ -239,7 +204,11 @@
 				<div class="flex w-full items-start gap-2 text-sm">
 					<div class="grid gap-2">
 						<div class="text-muted-foreground flex items-center gap-2 leading-none">
-							{dailyData.length} day{dailyData.length !== 1 ? 's' : ''} of usage data
+							{#if dailyTab === 'today'}
+								Showing cumulative cost for today (UTC), hour by hour
+							{:else}
+								{dailyData.length} day{dailyData.length !== 1 ? 's' : ''} of usage data
+							{/if}
 						</div>
 					</div>
 				</div>
