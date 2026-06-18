@@ -14,11 +14,13 @@
 	} = $props();
 
 	let manualToken = $state('');
+	let showEdit = $state(false);
 
 	function handlePaste() {
 		if (manualToken.trim()) {
 			onTokenPaste(manualToken.trim());
 			manualToken = '';
+			showEdit = false;
 		}
 	}
 
@@ -40,6 +42,14 @@
 				<strong>Token:</strong>
 				{#if isConnected}
 					Connected ({tokenPrefix})
+					<button
+						class="ml-2 text-xs text-muted-foreground underline hover:text-foreground"
+						onclick={() => {
+							showEdit = !showEdit;
+						}}
+					>
+						{showEdit ? 'cancel' : 'change'}
+					</button>
 				{:else}
 					Not connected
 				{/if}
@@ -62,21 +72,21 @@
 		</div>
 	</div>
 
-	<!-- Paste input: shown only when not connected -->
-	{#if !isConnected}
+	<!-- Paste input: shown when not connected or editing -->
+	{#if !isConnected || showEdit}
 		<div class="mt-3 flex max-w-lg gap-2">
 			<input
-				type="password"
+				type="text"
 				bind:value={manualToken}
 				onkeydown={handleKeydown}
 				placeholder="Paste token from bookmarklet here..."
 				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
 			/>
-			<Button size="sm" onclick={handlePaste} disabled={!manualToken.trim()}> Save </Button>
+			<Button size="sm" onclick={handlePaste} disabled={!manualToken.trim()}>Save</Button>
 		</div>
-	{:else}
+	{:else if !showEdit}
 		<p class="mt-2 text-xs text-muted-foreground">
-			Token saved in this browser. The bookmarklet copies your token — just paste it above if reconnecting.
+			Token saved in this browser. Drag the bookmarklet to get a new token if expired.
 		</p>
 	{/if}
 </div>
