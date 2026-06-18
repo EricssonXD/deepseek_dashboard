@@ -1,7 +1,17 @@
 export function buildBookmarkletCode(): string {
 	const code = `(function(){
+    var host = window.location.hostname;
+    var isDeepSeek = host === 'platform.deepseek.com' || host === 'chat.deepseek.com';
+
+    if (!isDeepSeek) {
+      // Not on DeepSeek — navigate there so localStorage is accessible, then re-click
+      window.location = 'https://platform.deepseek.com/#token-extract';
+      return;
+    }
+
     var TOKEN='';
 
+    // Primary: check known userToken key
     try {
       var raw = localStorage.getItem('userToken');
       if (raw) {
@@ -12,6 +22,7 @@ export function buildBookmarkletCode(): string {
       }
     } catch(e) {}
 
+    // Fallback: scan all localStorage for token-like values
     if (!TOKEN) {
       for (var i=0; i<localStorage.length; i++) {
         var k = localStorage.key(i);
@@ -29,7 +40,6 @@ export function buildBookmarkletCode(): string {
       navigator.clipboard.writeText(TOKEN).then(function() {
         alert('Token copied to clipboard!\\n\\nSwitch back to dashboard tab and paste it.');
       }).catch(function() {
-        // clipboard API failed, show token for manual copy
         prompt('Copy your token (Ctrl+C):', TOKEN);
       });
     } else {
