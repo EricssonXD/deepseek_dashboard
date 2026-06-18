@@ -207,7 +207,7 @@
 				<Card.Description>Daily cost across top {dailyKeys.length} keys</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<Chart.Container config={dailyConfig}>
+				<Chart.Container config={dailyConfig} class="max-h-[350px]">
 					<LineChart
 						points={{ r: 4 }}
 						data={dailyData}

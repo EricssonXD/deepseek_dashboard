@@ -145,12 +145,26 @@ export function buildDailyUsage(
 	}
 
 	// Build sorted data array
-	const dailyData: DailyKeyUsage[] = Object.entries(dateMap)
-		.sort(([a], [b]) => a.localeCompare(b))
-		.map(([date, keys]) => ({
-			date: new Date(date + 'T00:00:00'),
-			...keys
-		}));
+	const entries = Object.entries(dateMap).sort(([a], [b]) => a.localeCompare(b));
+	if (entries.length === 0) return { dailyData: [], dailyKeys: topKeys };
+
+	const minDate = new Date(entries[0][0] + 'T00:00:00');
+	const maxDate = new Date(entries[entries.length - 1][0] + 'T00:00:00');
+
+	// Fill all dates in range, setting missing keys to 0
+	const dailyData: DailyKeyUsage[] = [];
+	const cursor = new Date(minDate);
+	const zeroKeys = Object.fromEntries(topKeys.map((k) => [k, 0]));
+	while (cursor <= maxDate) {
+		const dateStr = cursor.toISOString().slice(0, 10);
+		const existing = dateMap[dateStr] ?? {};
+		dailyData.push({
+			date: new Date(cursor),
+			...zeroKeys,
+			...existing
+		});
+		cursor.setUTCDate(cursor.getUTCDate() + 1);
+	}
 
 	return { dailyData, dailyKeys: topKeys };
 }
