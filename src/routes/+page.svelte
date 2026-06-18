@@ -53,6 +53,8 @@
 	const bookmarkletHref = $derived(buildBookmarkletCode($page.url.origin));
 
 	// ── Token polling ──
+	let autoFetched = $state(false);
+
 	async function checkStoredToken() {
 		try {
 			const resp = await fetch('/api/check-token');
@@ -67,7 +69,12 @@
 	}
 
 	$effect(() => {
-		checkStoredToken();
+		checkStoredToken().then((connected) => {
+			if (connected && !autoFetched && allRows.length === 0) {
+				autoFetched = true;
+				fetchFromApi();
+			}
+		});
 		const interval = setInterval(async () => {
 			if (!isConnected) await checkStoredToken();
 		}, 3000);
