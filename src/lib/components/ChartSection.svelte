@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Arc, BarChart, LineChart, PieChart, Text } from 'layerchart';
 	import { scaleBand, scaleUtc } from 'd3-scale';
-	import { curveNatural } from 'd3-shape';
+	import { curveMonotoneX } from 'd3-shape';
 	import { cubicInOut } from 'svelte/easing';
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -216,7 +216,7 @@
 						axis="x"
 						series={dailySeries}
 						props={{
-							spline: { curve: curveNatural, motion: 'tween', strokeWidth: 2 },
+							spline: { curve: curveMonotoneX, motion: 'tween', strokeWidth: 2 },
 							highlight: {
 								points: {
 									motion: 'none',
