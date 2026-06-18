@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { BarChart, PieChart } from 'layerchart';
+	import { Arc, BarChart, PieChart, Text } from 'layerchart';
 	import { scaleBand } from 'd3-scale';
+	import { cubicInOut } from 'svelte/easing';
+	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
 	import * as Chart from '$lib/components/ui/chart/index.js';
-	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import type { KeySummary } from '$lib/types/dashboard';
 
 	let {
@@ -38,17 +40,21 @@
 		cost: { label: 'Cost (USD)', color: 'var(--color-primary)' }
 	});
 
-	// ── Donut: cost per model ──
+	const totalBarCost = $derived(barData.reduce((s, d) => s + d.cost, 0));
+
+	// ── Pie: cost per model ──
 	const modelEntries = $derived(Object.entries(modelTotals).sort((a, b) => b[1] - a[1]));
 	const pieData = $derived(
-		modelEntries.map(([model, cost]) => ({
+		modelEntries.map(([model, cost], i) => ({
 			model,
-			cost
+			cost,
+			color: CHART_COLORS[i % CHART_COLORS.length]
 		}))
 	);
 
-	const pieConfig = $derived<Chart.ChartConfig>(
-		Object.fromEntries(
+	const pieConfig = $derived<Chart.ChartConfig>({
+		cost: { label: 'Cost' },
+		...Object.fromEntries(
 			modelEntries.map(([model], i) => [
 				model,
 				{
@@ -57,27 +63,26 @@
 				}
 			])
 		)
-	);
+	});
 
 	const totalCost = $derived(modelEntries.reduce((s, [, c]) => s + c, 0));
 </script>
 
 <div class="grid grid-cols-[repeat(auto-fit,minmax(400px,1fr))] gap-4 px-6 pb-6">
 	<!-- Bar Chart: Cost per API Key -->
-	<Card>
-		<CardHeader>
-			<CardTitle class="text-sm text-foreground">Cost per API Key</CardTitle>
-		</CardHeader>
-		<CardContent>
+	<Card.Root>
+		<Card.Header>
+			<Card.Title class="text-sm text-foreground">Cost per API Key</Card.Title>
+			<Card.Description>Top {barData.length} keys by spend</Card.Description>
+		</Card.Header>
+		<Card.Content>
 			{#if barData.length > 0}
-				<Chart.Container config={barConfig} class="min-h-[200px] w-full">
+				<Chart.Container config={barConfig}>
 					<BarChart
 						data={barData}
 						xScale={scaleBand().padding(0.25)}
 						x="name"
 						axis="x"
-						grid={false}
-						tooltipContext={false}
 						series={[
 							{
 								key: 'cost',
@@ -85,44 +90,88 @@
 								color: barConfig.cost.color
 							}
 						]}
+						props={{
+							bars: {
+								stroke: 'none',
+								rounded: 'all',
+								radius: 8,
+								motion: { type: 'tween', duration: 500, easing: cubicInOut }
+							},
+							highlight: { area: { fill: 'none' } },
+							xAxis: { format: (d: string) => d.length > 12 ? d.slice(0, 12) + '…' : d }
+						}}
 					>
 						{#snippet tooltip()}
-							<Chart.Tooltip indicator="line" />
+							<Chart.Tooltip hideLabel />
 						{/snippet}
 					</BarChart>
 				</Chart.Container>
 			{:else}
 				<p class="py-10 text-center text-sm text-muted-foreground">No data yet</p>
 			{/if}
-		</CardContent>
-	</Card>
+		</Card.Content>
+		<Card.Footer>
+			<div class="flex w-full items-start gap-2 text-sm">
+				<div class="grid gap-2">
+					<div class="flex items-center gap-2 leading-none font-medium">
+						Total: ${totalBarCost.toFixed(2)}
+					</div>
+					<div class="text-muted-foreground flex items-center gap-2 leading-none">
+						Across {barData.length} API key{barData.length !== 1 ? 's' : ''}
+					</div>
+				</div>
+			</div>
+		</Card.Footer>
+	</Card.Root>
 
-	<!-- Donut Chart: Cost per Model -->
-	<Card>
-		<CardHeader>
-			<CardTitle class="text-sm text-foreground">Cost per Model</CardTitle>
-		</CardHeader>
-		<CardContent>
+	<!-- Pie Chart: Cost per Model -->
+	<Card.Root class="flex flex-col">
+		<Card.Header class="items-center">
+			<Card.Title class="text-sm text-foreground">Cost per Model</Card.Title>
+			<Card.Description>Total cost by model</Card.Description>
+		</Card.Header>
+		<Card.Content class="flex-1">
 			{#if pieData.length > 0}
-				<Chart.Container config={pieConfig} class="min-h-[300px] w-full">
+				<Chart.Container config={pieConfig} class="mx-auto aspect-square max-h-[250px]">
 					<PieChart
 						data={pieData}
 						key="model"
 						value="cost"
-						c="model"
-						innerRadius={70}
-						cornerRadius={3}
-						padAngle={1}
-						tooltipContext={false}
+						cRange={pieData.map((d) => d.color)}
+						c="color"
+						props={{
+							pie: {
+								motion: 'tween'
+							}
+						}}
 					>
 						{#snippet tooltip()}
-							<Chart.Tooltip />
+							<Chart.Tooltip hideLabel />
+						{/snippet}
+						{#snippet arc({ props, visibleData, index })}
+							<Arc {...props}>
+								{#snippet children({ getArcTextProps })}
+									<Text
+										value={visibleData[index].cost}
+										{...getArcTextProps('outer', {
+											startOffset: '50%',
+											outerPadding: 10
+										})}
+										class="fill-foreground"
+									/>
+								{/snippet}
+							</Arc>
 						{/snippet}
 					</PieChart>
 				</Chart.Container>
 			{:else}
 				<p class="py-10 text-center text-sm text-muted-foreground">No data yet</p>
 			{/if}
-		</CardContent>
-	</Card>
+		</Card.Content>
+		<Card.Footer class="flex-col gap-2 text-sm">
+			<div class="text-muted-foreground leading-none">
+				Total cost across {pieData.length} model{pieData.length !== 1 ? 's' : ''}
+			</div>
+		</Card.Footer>
+	</Card.Root>
 </div>
