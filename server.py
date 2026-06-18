@@ -1,22 +1,29 @@
 #!/usr/bin/env python3
 
 
-#  curl 'https://platform.deepseek.com/api/v0/usage/amount?month=6&year=2026' \
-#   -H 'authorization: Bearer <your-deepseek-token>'
+"""Static file server + DeepSeek API proxy. Zero dependencies beyond stdlib.
 
-"""Static file server + DeepSeek API proxy. Zero dependencies beyond stdlib."""
+Fetches the export ZIP from DeepSeek which contains two CSVs:
+  - amount-YYYY-M.csv  — per-key, per-model, per-type token usage (price + amount)
+  - cost-YYYY-M.csv    — per-key, per-model daily cost totals
+
+The amount CSV has api_key + api_key_name columns — perfect match for the
+frontend's per-key dashboard views (bar chart, line chart, key table).
+"""
 import csv
 import http.server
 import io
 import json
 import urllib.request
 import urllib.parse
+import zipfile
 import os
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent
-API_BASE = "https://platform.deepseek.com/api/v0/usage"
+EXPORT_URL = "https://platform.deepseek.com/api/v0/usage/export"
+SUMMARY_URL = "https://platform.deepseek.com/api/v0/users/get_user_summary"
 TOKEN_FILE = ROOT / ".token"
 
 CSV_COLS = ["utc_date", "model", "api_key", "api_key_name", "type", "price", "amount", "cost"]
@@ -26,80 +33,111 @@ def _log(msg):
     print(f"[server] {msg}", file=sys.stderr, flush=True)
 
 
-def _transform_response(cost_raw: str, amount_raw: str) -> tuple:
-    """Parse DeepSeek JSON API responses and merge into CSV strings.
+def _api_fetch(url: str, token: str) -> bytes:
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return resp.read()
 
-    The new DeepSeek API returns JSON with daily per-model usage arrays.
-    We merge cost (dollar values) and amount (token counts) by date+model+type,
-    then emit CSV rows the frontend can parse with its existing PapaParse flow.
-    """
+
+def _parse_summary(raw: str) -> dict:
     try:
-        cost_data = json.loads(cost_raw)
-        amount_data = json.loads(amount_raw)
-    except json.JSONDecodeError:
-        return cost_raw, amount_raw  # fallback: pass through unchanged
+        data = json.loads(raw)
+        biz = data.get("data", {}).get("biz_data", {})
+        wallets = biz.get("normal_wallets", [])
+        balance = float(wallets[0].get("balance", 0)) if wallets else 0
+        costs = biz.get("monthly_costs", [])
+        month_cost = float(costs[0].get("amount", 0)) if costs else 0
+        return {"balance": balance, "monthly_cost": month_cost}
+    except Exception:
+        return {}
 
-    # Extract cost map: (date, model, type) -> cost_dollars
-    cost_map = {}
-    cost_biz = cost_data.get("data", {}).get("biz_data", [])
-    if isinstance(cost_biz, dict):
-        cost_biz = [cost_biz]
-    for entry in cost_biz:
-        for day in entry.get("days", []):
-            date = day.get("date", "")
-            for model_entry in day.get("data", []):
-                model = model_entry.get("model", "")
-                for usage in model_entry.get("usage", []):
-                    key = (date, model, usage.get("type", ""))
-                    cost_map[key] = float(usage.get("amount", 0))
 
-    # Build amount CSV rows, merging in cost data
-    amount_rows = []
-    amount_biz = amount_data.get("data", {}).get("biz_data", {})
-    if isinstance(amount_biz, list):
-        amount_biz = amount_biz[0] if amount_biz else {}
-    for day in amount_biz.get("days", []):
-        date = day.get("date", "")
-        for model_entry in day.get("data", []):
-            model = model_entry.get("model", "")
-            for usage in model_entry.get("usage", []):
-                utype = usage.get("type", "")
-                token_count = float(usage.get("amount", 0))
-                cost_val = cost_map.get((date, model, utype), 0)
-                # For amount rows: parseAndStore computes cost = price * amount.
-                # Set price = cost_val so cost = cost_val * 1 = cost_val.
-                # Set amount = token_count for token stats (KeyDetail table).
-                amount_rows.append({
-                    "utc_date": date,
-                    "model": model,
-                    "api_key": "N/A",
-                    "api_key_name": "N/A",
-                    "type": utype,
-                    "price": "0",
-                    "amount": str(int(token_count)),
-                    "cost": str(cost_val),
-                })
+def _normalize_cost_csv(raw: str, key_lookup: dict) -> str:
+    """Transform the export cost CSV to match frontend's expected columns.
 
-    # Generate CSV strings
-    def to_csv(rows):
-        if not rows:
-            return ""
-        buf = io.StringIO()
-        w = csv.DictWriter(buf, fieldnames=CSV_COLS)
-        w.writeheader()
-        w.writerows(rows)
-        return buf.getvalue()
+    Export cost CSV: user_id,utc_date,model,wallet_type,cost,currency
+    Expected:        utc_date,model,api_key,api_key_name,type,price,amount,cost
 
-    # "cost" CSV: only cost rows (rowType=cost) — for completeness
-    cost_rows = [
-        {**r, "price": "0", "amount": "0", "cost": r["price"]}
-        for r in amount_rows
-    ]
-    return to_csv(cost_rows), to_csv(amount_rows)
+    We add api_key/api_key_name by looking up user_id in key_lookup,
+    and fill type/price/amount with defaults.
+    """
+    reader = csv.DictReader(io.StringIO(raw))
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=CSV_COLS)
+    writer.writeheader()
+
+    for row in reader:
+        uid = row.get("user_id", "")
+        masked, name = key_lookup.get(uid, ("N/A", "N/A"))
+        writer.writerow({
+            "utc_date": row.get("utc_date", ""),
+            "model": row.get("model", ""),
+            "api_key": masked,
+            "api_key_name": name,
+            "type": "cost",
+            "price": "0",
+            "amount": "0",
+            "cost": row.get("cost", "0"),
+        })
+    return buf.getvalue()
+
+
+def _process_export(zip_bytes: bytes) -> tuple:
+    """Extract amount + cost CSVs from the export ZIP.
+
+    Returns (cost_csv, amount_csv) strings matching frontend CSV_COLS format.
+    """
+    cost_raw = ""
+    amount_raw = ""
+    key_lookup = {}  # user_id -> (api_key_masked, api_key_name)
+
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
+        for name in zf.namelist():
+            content = zf.read(name).decode("utf-8-sig")  # handle BOM
+            if "amount" in name.lower():
+                amount_raw = content
+                # Build key lookup from amount CSV
+                reader = csv.DictReader(io.StringIO(content))
+                for row in reader:
+                    uid = row.get("user_id", "")
+                    if uid and uid not in key_lookup:
+                        key_lookup[uid] = (
+                            row.get("api_key", uid),
+                            row.get("api_key_name", uid),
+                        )
+            elif "cost" in name.lower():
+                cost_raw = content
+
+    if not amount_raw:
+        return "", ""
+
+    # Amount CSV from export has columns:
+    #   user_id,utc_date,model,api_key_name,api_key,type,price,amount
+    # Drop user_id column, everything else matches CSV_COLS (cost is computed).
+    reader = csv.DictReader(io.StringIO(amount_raw))
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=CSV_COLS)
+    writer.writeheader()
+    for row in reader:
+        writer.writerow({
+            "utc_date": row.get("utc_date", ""),
+            "model": row.get("model", ""),
+            "api_key": row.get("api_key", ""),
+            "api_key_name": row.get("api_key_name", ""),
+            "type": row.get("type", ""),
+            "price": row.get("price", "0"),
+            "amount": row.get("amount", "0"),
+            "cost": "0",  # computed by frontend: price * amount
+        })
+    amount_csv = buf.getvalue()
+
+    # Normalize cost CSV
+    cost_csv = _normalize_cost_csv(cost_raw, key_lookup) if cost_raw else ""
+
+    return cost_csv, amount_csv
 
 
 class ProxyHandler(http.server.SimpleHTTPRequestHandler):
-    # In-memory token store shared across requests
     _stored_token = None
 
     def __init__(self, *args, **kwargs):
@@ -130,11 +168,9 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
         if not token:
             self._json({"error": "Token required"}, 400)
             return
-        # Strip "Bearer " prefix if present — we only need the raw token
         if token.lower().startswith("bearer "):
             token = token[7:].strip()
         ProxyHandler._stored_token = token
-        # Persist to file so token survives server restart
         try:
             TOKEN_FILE.write_text(token)
         except Exception as e:
@@ -144,7 +180,8 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
 
     def _handle_get_token(self):
         if ProxyHandler._stored_token:
-            self._json({"token": ProxyHandler._stored_token, "prefix": ProxyHandler._stored_token[:20] + "..."})
+            self._json({"token": ProxyHandler._stored_token,
+                        "prefix": ProxyHandler._stored_token[:20] + "..."})
         else:
             self._json({"token": None})
 
@@ -158,35 +195,49 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
             self._json({"error": "Invalid request body"}, 400)
             return
 
-        # Always use stored token — token is set once via /api/set-token
         token = ProxyHandler._stored_token
         if not token:
             self._json({"error": "No token stored. Use bookmarklet or paste token first."}, 400)
             return
 
-        _log(f"fetching {year}-{month} with token prefix {token[:10]}... (len={len(token)})")
+        _log(f"fetching export {year}-{month}...")
 
-        results = {}
-        for kind in ("cost", "amount"):
-            url = f"{API_BASE}/{kind}?month={month}&year={year}"
-            req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
-            try:
-                with urllib.request.urlopen(req, timeout=30) as resp:
-                    results[kind] = resp.read().decode("utf-8")
-            except urllib.error.HTTPError as e:
-                body = e.read().decode("utf-8", errors="replace")
-                _log(f"DeepSeek API {e.code} for {kind}: {body[:200]}")
-                self._json({"error": f"DeepSeek API {e.code}: {body[:300]}"}, 502)
-                return
-            except Exception as e:
-                _log(f"fetch failed for {kind}: {e}")
-                self._json({"error": f"Fetch failed: {str(e)}"}, 502)
-                return
+        # Fetch export ZIP + summary
+        try:
+            zip_bytes = _api_fetch(f"{EXPORT_URL}?month={month}&year={year}", token)
+        except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace")
+            self._json({"error": f"DeepSeek export {e.code}: {body[:300]}"}, 502)
+            return
+        except Exception as e:
+            self._json({"error": f"Export fetch failed: {str(e)}"}, 502)
+            return
 
-        # Transform JSON API response to CSV format frontend expects
-        cost_csv, amount_csv = _transform_response(results["cost"], results["amount"])
-        _log(f"transformed: {len(cost_csv.splitlines())} cost rows, {len(amount_csv.splitlines())} amount rows")
-        self._json({"cost": cost_csv, "amount": amount_csv})
+        cost_csv, amount_csv = _process_export(zip_bytes)
+
+        # Fetch summary for wallet balance
+        summary = {}
+        try:
+            raw = _api_fetch(SUMMARY_URL, token).decode("utf-8")
+            summary = _parse_summary(raw)
+        except Exception as e:
+            _log(f"summary fetch failed (non-fatal): {e}")
+
+        amt_lines = len(amount_csv.splitlines()) if amount_csv else 0
+        cost_lines = len(cost_csv.splitlines()) if cost_csv else 0
+        keys_found = len(set(
+            r["api_key_name"] for r in csv.DictReader(io.StringIO(amount_csv))
+        )) if amount_csv else 0
+
+        _log(f"export: {keys_found} keys, {amt_lines} amount rows, {cost_lines} cost rows  "
+             f"balance=${summary.get('balance', 0):.2f}")
+
+        self._json({
+            "cost": cost_csv,
+            "amount": amount_csv,
+            "balance": summary.get("balance", 0),
+            "monthly_cost": summary.get("monthly_cost", 0),
+        })
 
     def _json(self, data, status=200):
         body = json.dumps(data).encode("utf-8")
@@ -208,13 +259,12 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
 
-    # Restore persisted token from previous run
     if TOKEN_FILE.exists():
         try:
             persisted = TOKEN_FILE.read_text().strip()
             if persisted:
                 ProxyHandler._stored_token = persisted
-                _log(f"restored token from .token (prefix: {persisted[:10]}..., len={len(persisted)})")
+                _log(f"restored token from .token (prefix: {persisted[:10]}...)")
         except Exception as e:
             _log(f"failed to restore token: {e}")
 

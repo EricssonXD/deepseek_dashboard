@@ -117,7 +117,7 @@
 			const resp = await fetch('/api/fetch', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ token, month: fetchMonth, year: fetchYear })
+				body: JSON.stringify({ month: fetchMonth, year: fetchYear })
 			});
 			const data = await resp.json();
 			if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
@@ -131,7 +131,7 @@
 				newRows.push(...parseAndStore(data.amount, `amount-${fetchYear}-${fetchMonth}.csv`, label));
 			}
 
-			allRows = [...allRows, ...newRows];
+			allRows = newRows;
 			fetchStatus = {
 				message: `Loaded ${fetchYear}-${String(fetchMonth).padStart(2, '0')} data from API.`,
 				type: 'success'
