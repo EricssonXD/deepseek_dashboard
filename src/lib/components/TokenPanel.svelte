@@ -43,7 +43,8 @@
 		{#if bookmarkletHref}
 			<a
 				href={bookmarkletHref}
-				class="inline-block shrink-0 cursor-grab rounded-md bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground no-underline"
+				class="inline-block shrink-0 cursor-grab select-none rounded-md bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground no-underline"
+				draggable="true"
 				title="Drag this to your bookmarks bar. Then go to platform.deepseek.com and click it."
 			>
 				DeepSeek Token
