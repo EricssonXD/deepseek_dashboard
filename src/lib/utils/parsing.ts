@@ -44,8 +44,6 @@ export function parseAndStore(csvText: string, csvName: string, zipName: string)
 				rowType: 'cost'
 			});
 		} else if (isAmount) {
-			// If price is set, cost = price * amount (uploaded CSV format).
-			// If price is 0, use the direct cost value from CSV (API JSON→CSV transform).
 			rows.push({
 				zipName,
 				csvName,
@@ -124,7 +122,6 @@ export function buildDailyUsage(
 	allRows: DashboardRow[],
 	topKeyCount = 6
 ): { dailyData: DailyKeyUsage[]; dailyKeys: string[] } {
-	// Find top keys by total cost (amount rows only)
 	const keyCosts: Record<string, number> = {};
 	for (const row of allRows) {
 		if (row.rowType !== 'amount') continue;
@@ -136,25 +133,22 @@ export function buildDailyUsage(
 		.slice(0, topKeyCount)
 		.map(([k]) => k);
 
-	// Group by date + key
 	const dateMap: Record<string, Record<string, number>> = {};
 	for (const row of allRows) {
 		if (row.rowType !== 'amount') continue;
 		const label = row.apiKeyName || row.apiKeyMasked;
 		if (!topKeys.includes(label)) continue;
-		const date = row.utcDate.slice(0, 10); // YYYY-MM-DD
+		const date = row.utcDate.slice(0, 10);
 		if (!dateMap[date]) dateMap[date] = {};
 		dateMap[date][label] = (dateMap[date][label] || 0) + row.cost;
 	}
 
-	// Build sorted data array
 	const entries = Object.entries(dateMap).sort(([a], [b]) => a.localeCompare(b));
 	if (entries.length === 0) return { dailyData: [], dailyKeys: topKeys };
 
 	const minDate = new Date(entries[0][0] + 'T00:00:00');
 	const maxDate = new Date(entries[entries.length - 1][0] + 'T00:00:00');
 
-	// Fill all dates in range, setting missing keys to 0
 	const dailyData: DailyKeyUsage[] = [];
 	const cursor = new Date(minDate);
 	const zeroKeys = Object.fromEntries(topKeys.map((k) => [k, 0]));
@@ -187,30 +181,37 @@ export function buildTodayUsage(
 		.slice(0, topKeyCount)
 		.map(([k]) => k);
 
+	if (topKeys.length === 0) return { todayData: [], todayKeys: [] };
+
 	const now = new Date();
 	const todayStr = now.toISOString().slice(0, 10);
+	const currentHour = now.getUTCHours();
 
 	const hourMap: Record<number, Record<string, number>> = {};
-	for (let h = 0; h < 24; h++) hourMap[h] = {};
+	for (let h = 0; h <= currentHour; h++) hourMap[h] = {};
 
+	let foundToday = false;
 	for (const row of allRows) {
 		if (row.rowType !== 'amount') continue;
 		const label = row.apiKeyName || row.apiKeyMasked;
 		if (!topKeys.includes(label)) continue;
-		const date = row.utcDate.slice(0, 10);
-		if (date !== todayStr) continue;
-		const timePart = row.utcDate.slice(11, 13);
-		const hour = parseInt(timePart, 10);
-		if (isNaN(hour) || hour < 0 || hour > 23) continue;
+		if (row.utcDate.slice(0, 10) !== todayStr) continue;
+		foundToday = true;
+		// Handle "2026-06-18T14:30:00" or "2026-06-18 14:30:00"
+		const m = row.utcDate.match(/[T ](\d{2}):/);
+		const hour = m ? parseInt(m[1], 10) : currentHour;
+		if (isNaN(hour) || hour < 0 || hour > currentHour) continue;
 		if (!hourMap[hour][label]) hourMap[hour][label] = 0;
 		hourMap[hour][label] += row.cost;
 	}
+
+	if (!foundToday) return { todayData: [], todayKeys: [] };
 
 	const zeroKeys = Object.fromEntries(topKeys.map((k) => [k, 0]));
 	const cumulative: Record<string, number> = { ...zeroKeys };
 	const todayData: DailyKeyUsage[] = [];
 
-	for (let h = 0; h < 24; h++) {
+	for (let h = 0; h <= currentHour; h++) {
 		for (const key of topKeys) {
 			cumulative[key] += hourMap[h]?.[key] || 0;
 		}
@@ -222,4 +223,3 @@ export function buildTodayUsage(
 
 	return { todayData, todayKeys: topKeys };
 }
-
