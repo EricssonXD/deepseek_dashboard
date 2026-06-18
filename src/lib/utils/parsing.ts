@@ -24,6 +24,7 @@ export function parseAndStore(csvText: string, csvName: string, zipName: string)
 		const type = row['type'] || '';
 		const price = parseFloat(row['price']) || 0;
 		const amount = parseFloat(row['amount']) || 0;
+		const csvCost = parseFloat(row['cost']) || 0;
 
 		if (isCost) {
 			rows.push({
@@ -33,7 +34,7 @@ export function parseAndStore(csvText: string, csvName: string, zipName: string)
 				utcDate,
 				model,
 				walletType: row['wallet_type'] || '',
-				cost: parseFloat(row['cost']) || 0,
+				cost: csvCost,
 				currency: row['currency'] || 'USD',
 				apiKeyMasked: 'N/A',
 				apiKeyName: 'N/A',
@@ -43,6 +44,8 @@ export function parseAndStore(csvText: string, csvName: string, zipName: string)
 				rowType: 'cost'
 			});
 		} else if (isAmount) {
+			// If price is set, cost = price * amount (uploaded CSV format).
+			// If price is 0, use the direct cost value from CSV (API JSON→CSV transform).
 			rows.push({
 				zipName,
 				csvName,
@@ -50,7 +53,7 @@ export function parseAndStore(csvText: string, csvName: string, zipName: string)
 				utcDate,
 				model,
 				walletType: '',
-				cost: price * amount,
+				cost: price > 0 ? price * amount : csvCost,
 				currency: 'USD',
 				apiKeyMasked,
 				apiKeyName,

@@ -5,7 +5,9 @@
 #   -H 'authorization: Bearer <your-deepseek-token>'
 
 """Static file server + DeepSeek API proxy. Zero dependencies beyond stdlib."""
+import csv
 import http.server
+import io
 import json
 import urllib.request
 import urllib.parse
@@ -17,9 +19,83 @@ ROOT = Path(__file__).parent
 API_BASE = "https://platform.deepseek.com/api/v0/usage"
 TOKEN_FILE = ROOT / ".token"
 
+CSV_COLS = ["utc_date", "model", "api_key", "api_key_name", "type", "price", "amount", "cost"]
+
 
 def _log(msg):
     print(f"[server] {msg}", file=sys.stderr, flush=True)
+
+
+def _transform_response(cost_raw: str, amount_raw: str) -> tuple:
+    """Parse DeepSeek JSON API responses and merge into CSV strings.
+
+    The new DeepSeek API returns JSON with daily per-model usage arrays.
+    We merge cost (dollar values) and amount (token counts) by date+model+type,
+    then emit CSV rows the frontend can parse with its existing PapaParse flow.
+    """
+    try:
+        cost_data = json.loads(cost_raw)
+        amount_data = json.loads(amount_raw)
+    except json.JSONDecodeError:
+        return cost_raw, amount_raw  # fallback: pass through unchanged
+
+    # Extract cost map: (date, model, type) -> cost_dollars
+    cost_map = {}
+    cost_biz = cost_data.get("data", {}).get("biz_data", [])
+    if isinstance(cost_biz, dict):
+        cost_biz = [cost_biz]
+    for entry in cost_biz:
+        for day in entry.get("days", []):
+            date = day.get("date", "")
+            for model_entry in day.get("data", []):
+                model = model_entry.get("model", "")
+                for usage in model_entry.get("usage", []):
+                    key = (date, model, usage.get("type", ""))
+                    cost_map[key] = float(usage.get("amount", 0))
+
+    # Build amount CSV rows, merging in cost data
+    amount_rows = []
+    amount_biz = amount_data.get("data", {}).get("biz_data", {})
+    if isinstance(amount_biz, list):
+        amount_biz = amount_biz[0] if amount_biz else {}
+    for day in amount_biz.get("days", []):
+        date = day.get("date", "")
+        for model_entry in day.get("data", []):
+            model = model_entry.get("model", "")
+            for usage in model_entry.get("usage", []):
+                utype = usage.get("type", "")
+                token_count = float(usage.get("amount", 0))
+                cost_val = cost_map.get((date, model, utype), 0)
+                # For amount rows: parseAndStore computes cost = price * amount.
+                # Set price = cost_val so cost = cost_val * 1 = cost_val.
+                # Set amount = token_count for token stats (KeyDetail table).
+                amount_rows.append({
+                    "utc_date": date,
+                    "model": model,
+                    "api_key": "N/A",
+                    "api_key_name": "N/A",
+                    "type": utype,
+                    "price": "0",
+                    "amount": str(int(token_count)),
+                    "cost": str(cost_val),
+                })
+
+    # Generate CSV strings
+    def to_csv(rows):
+        if not rows:
+            return ""
+        buf = io.StringIO()
+        w = csv.DictWriter(buf, fieldnames=CSV_COLS)
+        w.writeheader()
+        w.writerows(rows)
+        return buf.getvalue()
+
+    # "cost" CSV: only cost rows (rowType=cost) — for completeness
+    cost_rows = [
+        {**r, "price": "0", "amount": "0", "cost": r["price"]}
+        for r in amount_rows
+    ]
+    return to_csv(cost_rows), to_csv(amount_rows)
 
 
 class ProxyHandler(http.server.SimpleHTTPRequestHandler):
@@ -107,7 +183,10 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
                 self._json({"error": f"Fetch failed: {str(e)}"}, 502)
                 return
 
-        self._json({"cost": results["cost"], "amount": results["amount"]})
+        # Transform JSON API response to CSV format frontend expects
+        cost_csv, amount_csv = _transform_response(results["cost"], results["amount"])
+        _log(f"transformed: {len(cost_csv.splitlines())} cost rows, {len(amount_csv.splitlines())} amount rows")
+        self._json({"cost": cost_csv, "amount": amount_csv})
 
     def _json(self, data, status=200):
         body = json.dumps(data).encode("utf-8")
