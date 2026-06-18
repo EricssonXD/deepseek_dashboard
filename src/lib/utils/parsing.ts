@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
 import JSZip from 'jszip';
-import type { DashboardRow, KeySummary } from '$lib/types/dashboard';
+import type { DailyKeyUsage, DashboardRow, KeySummary } from '$lib/types/dashboard';
 
 export function parseAndStore(csvText: string, csvName: string, zipName: string): DashboardRow[] {
 	const result = Papa.parse<Record<string, string>>(csvText, {
@@ -115,4 +115,42 @@ export function buildKeyStats(allRows: DashboardRow[]) {
 		.sort((a, b) => b.cost - a.cost);
 
 	return { keyList, modelTotals, grandTotal };
+}
+
+export function buildDailyUsage(
+	allRows: DashboardRow[],
+	topKeyCount = 6
+): { dailyData: DailyKeyUsage[]; dailyKeys: string[] } {
+	// Find top keys by total cost (amount rows only)
+	const keyCosts: Record<string, number> = {};
+	for (const row of allRows) {
+		if (row.rowType !== 'amount') continue;
+		const label = row.apiKeyName || row.apiKeyMasked;
+		keyCosts[label] = (keyCosts[label] || 0) + row.cost;
+	}
+	const topKeys = Object.entries(keyCosts)
+		.sort((a, b) => b[1] - a[1])
+		.slice(0, topKeyCount)
+		.map(([k]) => k);
+
+	// Group by date + key
+	const dateMap: Record<string, Record<string, number>> = {};
+	for (const row of allRows) {
+		if (row.rowType !== 'amount') continue;
+		const label = row.apiKeyName || row.apiKeyMasked;
+		if (!topKeys.includes(label)) continue;
+		const date = row.utcDate.slice(0, 10); // YYYY-MM-DD
+		if (!dateMap[date]) dateMap[date] = {};
+		dateMap[date][label] = (dateMap[date][label] || 0) + row.cost;
+	}
+
+	// Build sorted data array
+	const dailyData: DailyKeyUsage[] = Object.entries(dateMap)
+		.sort(([a], [b]) => a.localeCompare(b))
+		.map(([date, keys]) => ({
+			date: new Date(date + 'T00:00:00'),
+			...keys
+		}));
+
+	return { dailyData, dailyKeys: topKeys };
 }

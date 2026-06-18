@@ -34,6 +34,11 @@ export interface KeyDetail {
 	requestCount: number;
 }
 
+export interface DailyKeyUsage {
+	date: Date;
+	[key: string]: Date | number;
+}
+
 export interface FetchStatus {
 	message: string;
 	type: '' | 'success' | 'error' | 'loading';
