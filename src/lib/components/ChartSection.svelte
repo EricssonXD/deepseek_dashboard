@@ -23,7 +23,8 @@
 		todayKeys: string[];
 	} = $props();
 
-	let dailyTab = $state<'today' | '30d'>('today');
+	const SHOW_TODAY = false; // CSV lacks time component — disable until hourly data available
+	let dailyTab = $state<'today' | '30d'>('30d');
 
 	const CHART_COLORS = [
 		'var(--color-chart-1)',
@@ -147,14 +148,9 @@
 				<div class="flex items-center justify-between">
 					<div>
 						<Card.Title class="text-sm text-foreground">Consumption per API Key</Card.Title>
-						<Card.Description>
-							{#if dailyTab === 'today'}
-								Today — cumulative cost per key, per hour (UTC)
-							{:else}
-								Daily cost across top {dailyKeys.length} keys
-							{/if}
-						</Card.Description>
+						<Card.Description>Daily cost across top {dailyKeys.length} keys</Card.Description>
 					</div>
+					{#if SHOW_TODAY}
 					<div class="flex gap-1 rounded-md border border-border bg-muted p-0.5">
 						<button
 							class="rounded-sm px-3 py-1 text-xs font-medium transition-colors"
@@ -175,6 +171,7 @@
 							Last 30 Days
 						</button>
 					</div>
+					{/if}
 				</div>
 			</Card.Header>
 			<Card.Content>
@@ -204,11 +201,7 @@
 				<div class="flex w-full items-start gap-2 text-sm">
 					<div class="grid gap-2">
 						<div class="text-muted-foreground flex items-center gap-2 leading-none">
-							{#if dailyTab === 'today'}
-								Showing cumulative cost for today (UTC), hour by hour
-							{:else}
-								{dailyData.length} day{dailyData.length !== 1 ? 's' : ''} of usage data
-							{/if}
+							{dailyData.length} day{dailyData.length !== 1 ? 's' : ''} of usage data
 						</div>
 					</div>
 				</div>
