@@ -10,10 +10,15 @@ const CORS_HEADERS = {
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		const body = await request.json();
-		const token = (body.token || '').trim();
+		let token = (body.token || '').trim();
 		if (!token) {
 			return json({ error: 'Token required' }, { status: 400, headers: CORS_HEADERS });
 		}
+		if (token.toLowerCase().startsWith('bearer ')) {
+			token = token.slice(7).trim();
+		}
+
+		console.log(`[set-token] prefix=${token.slice(0, 10)}... len=${token.length}`);
 
 		cookies.set('ds_token', token, {
 			path: '/',
