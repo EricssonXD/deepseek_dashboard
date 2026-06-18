@@ -15,7 +15,6 @@
 	let allRows: DashboardRow[] = $state([]);
 	let isConnected = $state(false);
 	let tokenPrefix = $state('');
-	let token = $state('');
 	let fetchMonth = $state(new Date().getMonth() + 1);
 	let fetchYear = $state(new Date().getFullYear());
 	let isFetching = $state(false);
@@ -97,8 +96,7 @@
 			const data = await resp.json();
 			if (resp.ok) {
 				isConnected = true;
-				token = t;
-				tokenPrefix = data.prefix || t.slice(0, 20) + '...';
+				tokenPrefix = data.prefix || t.slice(0, 15) + '...';
 			}
 		} catch (err) {
 			console.error('Failed to save token:', err);
@@ -117,7 +115,7 @@
 			const resp = await fetch('/api/fetch', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ month: fetchMonth, year: fetchYear, token })
+				body: JSON.stringify({ month: fetchMonth, year: fetchYear })
 			});
 			const data = await resp.json();
 			if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);

@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import JSZip from 'jszip';
+import { storedToken } from '../token-store';
 
 const EXPORT_URL = 'https://platform.deepseek.com/api/v0/usage/export';
 const SUMMARY_URL = 'https://platform.deepseek.com/api/v0/users/get_user_summary';
@@ -55,8 +56,8 @@ function normalizeCostCSV(raw: string, keyLookup: Map<string, [string, string]>)
 	return rows.join('\n');
 }
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
-	let token = cookies.get('ds_token');
+export const POST: RequestHandler = async ({ request }) => {
+	let token = storedToken;
 
 	let month: string;
 	let year: string;
@@ -64,6 +65,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const body = await request.json();
 		month = String(body.month || 1);
 		year = String(body.year || 2026);
+		// Fallback: body token
 		if (!token && body.token) token = String(body.token).trim();
 	} catch {
 		return json({ error: 'Invalid request body' }, { status: 400 });
