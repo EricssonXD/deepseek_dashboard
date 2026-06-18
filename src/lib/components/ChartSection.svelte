@@ -98,7 +98,7 @@
 								motion: { type: 'tween', duration: 500, easing: cubicInOut }
 							},
 							highlight: { area: { fill: 'none' } },
-							xAxis: { format: (d: string) => d.length > 12 ? d.slice(0, 12) + '…' : d }
+							xAxis: { format: (d: string) => (d.length > 12 ? d.slice(0, 12) + '…' : d) }
 						}}
 					>
 						{#snippet tooltip()}
@@ -132,7 +132,7 @@
 		</Card.Header>
 		<Card.Content class="flex-1">
 			{#if pieData.length > 0}
-				<Chart.Container config={pieConfig} class="mx-auto w-full max-w-[350px] aspect-square">
+				<Chart.Container config={pieConfig} class="mx-auto max-w-1/2 aspect-square">
 					<PieChart
 						data={pieData}
 						key="model"
