@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepSeek Usage Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0d1117; color: #c9d1d9; min-height: 100vh;
+}
+.header {
+  background: #161b22; border-bottom: 1px solid #30363d; padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.header h1 { font-size: 20px; font-weight: 600; color: #f0f6fc; }
+.upload-zone {
+  border: 2px dashed #30363d; border-radius: 8px; padding: 40px 24px; margin: 24px;
+  text-align: center; cursor: pointer; transition: border-color .2s, background .2s;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: #58a6ff; background: #1c2333; }
+.upload-zone p { color: #8b949e; font-size: 14px; }
+.upload-zone .icon { font-size: 40px; margin-bottom: 8px; }
+#fileInput { display: none; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; padding: 0 24px 24px; }
+.card {
+  background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px;
+}
+.card .label { font-size: 12px; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; }
+.card .value { font-size: 28px; font-weight: 700; color: #f0f6fc; margin-top: 4px; }
+.card .sub { font-size: 12px; color: #8b949e; margin-top: 2px; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; padding: 0 24px 24px; }
+.chart-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
+.chart-box h3 { font-size: 14px; color: #f0f6fc; margin-bottom: 12px; }
+.table-wrap { padding: 0 24px 24px; overflow-x: auto; }
+.table-wrap h3 { font-size: 14px; color: #f0f6fc; margin-bottom: 12px; }
+table { width: 100%; border-collapse: collapse; background: #161b22; border: 1px solid #30363d; border-radius: 8px; }
+th, td { padding: 10px 14px; text-align: left; font-size: 13px; white-space: nowrap; }
+th { background: #1c2333; color: #8b949e; font-weight: 600; border-bottom: 1px solid #30363d; }
+td { border-bottom: 1px solid #21262d; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #1c2333; }
+.cost-col { text-align: right; font-variant-numeric: tabular-nums; }
+.api-key-masked { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; color: #58a6ff; }
+.model-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px;
+  background: #1f6feb22; color: #58a6ff; border: 1px solid #1f6feb44;
+}
+.empty-state { text-align: center; padding: 80px 24px; color: #484f58; }
+.empty-state .icon { font-size: 64px; margin-bottom: 12px; }
+.btn-reset {
+  background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;
+  padding: 6px 14px; font-size: 12px; cursor: pointer; transition: background .2s;
+}
+.btn-reset:hover { background: #30363d; }
+.files-loaded { font-size: 12px; color: #8b949e; }
+.fetch-panel {
+  margin: 24px 24px 0; padding: 16px; background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+  display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+}
+.fetch-panel label { display: block; font-size: 11px; color: #8b949e; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+.fetch-panel input, .fetch-panel select {
+  background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;
+  padding: 7px 10px; font-size: 13px; font-family: inherit;
+}
+.fetch-panel input:focus, .fetch-panel select:focus { outline: none; border-color: #58a6ff; }
+.token-field { flex: 1; min-width: 240px; }
+.month-field { width: 80px; }
+.year-field { width: 90px; }
+.btn-fetch {
+  background: #238636; color: #fff; border: none; border-radius: 6px;
+  padding: 8px 18px; font-size: 13px; cursor: pointer; font-weight: 600; transition: background .2s;
+}
+.btn-fetch:hover { background: #2ea043; }
+.btn-fetch:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
+.fetch-status { font-size: 12px; color: #8b949e; padding: 6px 24px 0; }
+.fetch-status.error { color: #f85149; }
+.fetch-status.success { color: #3fb950; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>DeepSeek Usage Dashboard</h1>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="files-loaded" id="filesLoaded"></span>
+    <button class="btn-reset" onclick="resetAll()">Clear All</button>
+  </div>
+</div>
+
+<div class="fetch-panel">
+  <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:280px;">
+    <span id="tokenStatus" style="width:10px;height:10px;border-radius:50%;background:#f85149;flex-shrink:0;"></span>
+    <span style="font-size:13px;"><strong>Token:</strong> <span id="tokenLabel">Not connected — drag bookmarklet below</span></span>
+  </div>
+  <a id="bookmarkletLink" href="javascript:void(0)" onclick="return false"
+     style="background:#1f6feb;color:#fff;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;text-decoration:none;cursor:grab;white-space:nowrap;flex-shrink:0;"
+     title="Drag this to your bookmarks bar. Then go to platform.deepseek.com and click it.">
+    DeepSeek Token
+  </a>
+  <span style="font-size:11px;color:#8b949e;">&larr; Drag to bookmarks bar</span>
+  <div class="month-field">
+    <label for="fetchMonth">Month</label>
+    <select id="fetchMonth"></select>
+  </div>
+  <div class="year-field">
+    <label for="fetchYear">Year</label>
+    <select id="fetchYear"></select>
+  </div>
+  <button class="btn-fetch" id="btnFetch" onclick="fetchFromApi()">Fetch from API</button>
+</div>
+<details style="padding:0 24px;margin-bottom:4px;">
+  <summary style="color:#8b949e;font-size:12px;cursor:pointer;">Manual token paste</summary>
+  <input type="password" id="bearerToken" placeholder="Paste token here..."
+         style="margin-top:6px;width:100%;max-width:500px;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:7px 10px;font-size:13px;font-family:inherit;">
+</details>
+<div class="fetch-status" id="fetchStatus"></div>
+
+<div class="upload-zone" id="dropZone">
+  <div class="icon">📦</div>
+  <p>Drop zip files here or click to upload</p>
+  <input type="file" id="fileInput" accept=".zip" multiple>
+</div>
+
+<div style="padding:0 24px 8px;text-align:center;">
+  <a href="https://platform.deepseek.com/usage" target="_blank" rel="noopener"
+     style="color:#58a6ff;font-size:13px;text-decoration:none;border:1px solid #30363d;border-radius:6px;padding:6px 16px;display:inline-block;transition:background .2s;"
+     onmouseover="this.style.background='#1c2333'" onmouseout="this.style.background='transparent'">
+    Download export from platform.deepseek.com/usage
+  </a>
+</div>
+<div class="summary" id="summary"></div>
+<div class="charts" id="charts"></div>
+<div class="table-wrap" id="tableSection"></div>
+
+<div class="empty-state" id="emptyState">
+  <div class="icon">📊</div>
+  <p>Upload a zip file to see usage data</p>
+</div>
+
+<script>
+let allRows = [];
+let charts = {};
+
+(function init() {
+  const now = new Date();
+  const monthSel = document.getElementById('fetchMonth');
+  for (let m = 1; m <= 12; m++) {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    if (m === now.getMonth() + 1) opt.selected = true;
+    monthSel.appendChild(opt);
+  }
+  const yearSel = document.getElementById('fetchYear');
+  for (let y = 2025; y <= 2027; y++) {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    if (y === now.getFullYear()) opt.selected = true;
+    yearSel.appendChild(opt);
+  }
+  setupBookmarklet();
+  checkStoredToken();
+})();
+
+function setupBookmarklet() {
+  // Build bookmarklet that extracts token from DeepSeek page and sends to our server
+  const code = `(function(){
+    var TOKEN='';
+    // Try localStorage keys
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      var v=localStorage.getItem(k);
+      if(v&&v.length>50&&(v.startsWith('sk-')||v.startsWith('ds-')||k.toLowerCase().indexOf('token')>-1||k.toLowerCase().indexOf('auth')>-1)){
+        TOKEN=v;break;
+      }
+    }
+    // Try cookies
+    if(!TOKEN){
+      document.cookie.split(';').forEach(function(c){
+        var parts=c.trim().split('=');
+        if(parts[0].toLowerCase().indexOf('token')>-1||parts[0].toLowerCase().indexOf('auth')>-1||parts[0].toLowerCase().indexOf('session')>-1){
+          TOKEN=decodeURIComponent(parts.slice(1).join('='));
+        }
+      });
+    }
+    // Try window vars
+    if(!TOKEN&&window.__NEXT_DATA__){
+      try{TOKEN=JSON.parse(document.getElementById('__NEXT_DATA__').textContent).props?.pageProps?.token||'';}catch(e){}
+    }
+    if(TOKEN){
+      fetch('${window.location.origin}/api/set-token',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({token:TOKEN})
+      }).then(function(r){return r.json()}).then(function(d){
+        alert('Token saved! Prefix: '+d.prefix+'\\nSwitch back to dashboard tab.');
+      }).catch(function(e){
+        alert('Error: '+e.message+'\\nIs dashboard server running?');
+      });
+    } else {
+      alert('Could not find token.\\nMake sure you are logged into platform.deepseek.com.\\n\\nTry: open DevTools > Application > Local Storage > look for auth token, then paste it manually.');
+    }
+  })();`;
+  document.getElementById('bookmarkletLink').href = 'javascript:' + encodeURIComponent(code);
+}
+
+async function checkStoredToken() {
+  try {
+    const resp = await fetch('/api/get-token');
+    const data = await resp.json();
+    if (data.token) {
+      document.getElementById('tokenStatus').style.background = '#3fb950';
+      document.getElementById('tokenLabel').textContent = 'Connected (' + data.prefix + ')';
+      document.getElementById('bearerToken').value = data.token;
+      return true;
+    }
+  } catch(e) {
+    // Server might not be running
+  }
+  return false;
+}
+
+// Poll for token from bookmarklet (every 3s when not connected)
+setInterval(async () => {
+  const el = document.getElementById('tokenStatus');
+  if (el && el.style.background === 'rgb(249, 81, 73)') {
+    await checkStoredToken();
+  }
+}, 3000);
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', () => {
+  handleFiles(fileInput.files);
+  fileInput.value = '';
+});
+
+async function handleFiles(files) {
+  for (const file of files) {
+    if (!file.name.endsWith('.zip')) continue;
+    try {
+      const zip = await JSZip.loadAsync(file);
+      const csvFiles = Object.keys(zip.files).filter(f => f.endsWith('.csv'));
+      for (const csvName of csvFiles) {
+        const content = await zip.files[csvName].async('string');
+        parseAndStore(content, csvName, file.name);
+      }
+    } catch (err) {
+      console.error('Failed to read zip:', file.name, err);
+    }
+  }
+  renderAll();
+}
+
+function parseAndStore(csvText, csvName, zipName) {
+  const result = Papa.parse(csvText, { header: true, skipEmptyLines: true, dynamicTyping: false });
+  if (!result.data.length) return;
+
+  const isCost = csvName.toLowerCase().startsWith('cost');
+  const isAmount = csvName.toLowerCase().startsWith('amount');
+
+  for (const row of result.data) {
+    const apiKeyMasked = row['api_key'] || '';
+    const apiKeyName = row['api_key_name'] || '';
+    // BOM-stripped header aliases
+    const userId = row['user_id'] || row['﻿user_id'] || '';
+    const utcDate = row['utc_date'] || '';
+    const model = row['model'] || '';
+    const type = row['type'] || '';
+    const price = parseFloat(row['price']) || 0;
+    const amount = parseFloat(row['amount']) || 0;
+
+    if (isCost) {
+      allRows.push({
+        zipName, csvName,
+        userId, utcDate, model,
+        walletType: row['wallet_type'] || '',
+        cost: parseFloat(row['cost']) || 0,
+        currency: row['currency'] || 'USD',
+        apiKeyMasked: 'N/A',
+        apiKeyName: 'N/A',
+        type: 'cost',
+        price: 0, amount: 0,
+        rowType: 'cost'
+      });
+    } else if (isAmount) {
+      allRows.push({
+        zipName, csvName,
+        userId, utcDate, model,
+        walletType: '',
+        cost: price * amount,
+        currency: 'USD',
+        apiKeyMasked,
+        apiKeyName,
+        type,
+        price,
+        amount,
+        rowType: 'amount'
+      });
+    }
+  }
+}
+
+function renderAll() {
+  if (!allRows.length) {
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('summary').innerHTML = '';
+    document.getElementById('charts').innerHTML = '';
+    document.getElementById('tableSection').innerHTML = '';
+    document.getElementById('filesLoaded').textContent = '';
+    destroyCharts();
+    return;
+  }
+  document.getElementById('emptyState').style.display = 'none';
+  const zipNames = [...new Set(allRows.map(r => r.zipName))];
+  document.getElementById('filesLoaded').textContent = `${zipNames.length} file(s) loaded`;
+
+  renderSummary();
+  renderCharts();
+  renderTable();
+}
+
+function buildKeyStats() {
+  // Group by api_key_name to compute per-key totals (amount rows only)
+  const keyMap = {};
+  const modelTotals = {};
+  let grandTotal = 0;
+
+  for (const row of allRows) {
+    if (row.rowType !== 'amount') continue;
+    grandTotal += row.cost;
+    modelTotals[row.model] = (modelTotals[row.model] || 0) + row.cost;
+    const key = row.apiKeyMasked + '|' + row.apiKeyName;
+    if (!keyMap[key]) {
+      keyMap[key] = { apiKeyMasked: row.apiKeyMasked, apiKeyName: row.apiKeyName, cost: 0, models: new Set() };
+    }
+    keyMap[key].cost += row.cost;
+    keyMap[key].models.add(row.model);
+  }
+
+  const keyList = Object.values(keyMap).map(k => ({
+    ...k,
+    models: [...k.models]
+  })).sort((a, b) => b.cost - a.cost);
+
+  return { keyList, modelTotals, grandTotal };
+}
+
+function renderSummary() {
+  const { keyList, modelTotals, grandTotal } = buildKeyStats();
+  const topKey = keyList[0];
+  const topModel = Object.entries(modelTotals).sort((a, b) => b[1] - a[1])[0];
+
+  document.getElementById('summary').innerHTML = `
+    <div class="card">
+      <div class="label">Total Cost</div>
+      <div class="value">$${grandTotal.toFixed(4)}</div>
+      <div class="sub">USD</div>
+    </div>
+    <div class="card">
+      <div class="label">API Keys</div>
+      <div class="value">${keyList.length}</div>
+      <div class="sub">${topKey ? 'Top: ' + topKey.apiKeyName : ''}</div>
+    </div>
+    <div class="card">
+      <div class="label">Models Used</div>
+      <div class="value">${Object.keys(modelTotals).length}</div>
+      <div class="sub">${topModel ? 'Top: ' + topModel[0] : ''}</div>
+    </div>
+    <div class="card">
+      <div class="label">Top API Key Cost</div>
+      <div class="value">$${topKey ? topKey.cost.toFixed(4) : '0'}</div>
+      <div class="sub">${topKey ? topKey.apiKeyName : ''}</div>
+    </div>
+  `;
+}
+
+function destroyCharts() {
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+}
+
+function renderCharts() {
+  destroyCharts();
+  const { keyList, modelTotals } = buildKeyStats();
+  document.getElementById('charts').innerHTML = `
+    <div class="chart-box"><h3>Cost per API Key</h3><canvas id="chartKeyCost"></canvas></div>
+    <div class="chart-box"><h3>Cost per Model</h3><canvas id="chartModelCost"></canvas></div>
+  `;
+
+  // Bar chart: cost per API key (top 15)
+  const topKeys = keyList.slice(0, 15);
+  const barCtx = document.getElementById('chartKeyCost').getContext('2d');
+  charts.keyCost = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: topKeys.map(k => k.apiKeyName),
+      datasets: [{
+        label: 'Cost (USD)',
+        data: topKeys.map(k => k.cost),
+        backgroundColor: topKeys.map((_, i) => `hsla(${210 + i * 20}, 70%, 55%, 0.7)`),
+        borderColor: topKeys.map((_, i) => `hsla(${210 + i * 20}, 70%, 55%, 1)`),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { color: '#8b949e', callback: v => '$' + v.toFixed(4) }, grid: { color: '#21262d' } },
+        x: { ticks: { color: '#8b949e', maxRotation: 45 }, grid: { display: false } }
+      }
+    }
+  });
+
+  // Doughnut chart: cost per model
+  const modelEntries = Object.entries(modelTotals).sort((a, b) => b[1] - a[1]);
+  const pieCtx = document.getElementById('chartModelCost').getContext('2d');
+  charts.modelCost = new Chart(pieCtx, {
+    type: 'doughnut',
+    data: {
+      labels: modelEntries.map(e => e[0]),
+      datasets: [{
+        data: modelEntries.map(e => e[1]),
+        backgroundColor: modelEntries.map((_, i) => `hsla(${210 + i * 40}, 70%, 55%, 0.7)`),
+        borderColor: modelEntries.map((_, i) => `hsla(${210 + i * 40}, 70%, 55%, 1)`),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: '#8b949e', font: { size: 12 } } },
+        tooltip: { callbacks: { label: ctx => ` $${ctx.raw.toFixed(4)} (${((ctx.raw / modelEntries.reduce((s, e) => s + e[1], 0)) * 100).toFixed(1)}%)` } }
+      }
+    }
+  });
+}
+
+function renderTable() {
+  const { keyList, grandTotal } = buildKeyStats();
+
+  // Build per-key detail rows with token breakdown
+  const detailRows = [];
+  for (const key of keyList) {
+    const rows = allRows.filter(r => r.apiKeyName === key.apiKeyName && r.apiKeyMasked === key.apiKeyMasked);
+    const tokenTypes = {};
+    for (const r of rows) {
+      if (r.rowType === 'amount' && r.type) {
+        tokenTypes[r.type] = (tokenTypes[r.type] || 0) + r.amount;
+      }
+    }
+    detailRows.push({
+      apiKeyName: key.apiKeyName,
+      apiKeyMasked: key.apiKeyMasked,
+      models: key.models.sort().join(', '),
+      cost: key.cost,
+      costPct: grandTotal ? ((key.cost / grandTotal) * 100).toFixed(1) : '0',
+      outputTokens: tokenTypes['output_tokens'] || 0,
+      inputCacheHit: tokenTypes['input_cache_hit_tokens'] || 0,
+      inputCacheMiss: tokenTypes['input_cache_miss_tokens'] || 0,
+      requestCount: tokenTypes['request_count'] || 0
+    });
+  }
+
+  document.getElementById('tableSection').innerHTML = `
+    <h3>API Key Breakdown</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>API Key Name</th>
+          <th>Key</th>
+          <th>Models</th>
+          <th class="cost-col">Cost (USD)</th>
+          <th class="cost-col">Share</th>
+          <th class="cost-col">Output Tokens</th>
+          <th class="cost-col">Cache Hit Tokens</th>
+          <th class="cost-col">Cache Miss Tokens</th>
+          <th class="cost-col">Requests</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${detailRows.map(r => `
+          <tr>
+            <td><strong>${esc(r.apiKeyName)}</strong></td>
+            <td><span class="api-key-masked">${esc(r.apiKeyMasked)}</span></td>
+            <td>${r.models.split(', ').map(m => `<span class="model-badge">${esc(m)}</span>`).join(' ')}</td>
+            <td class="cost-col">$${r.cost.toFixed(4)}</td>
+            <td class="cost-col">${r.costPct}%</td>
+            <td class="cost-col">${r.outputTokens.toLocaleString()}</td>
+            <td class="cost-col">${r.inputCacheHit.toLocaleString()}</td>
+            <td class="cost-col">${r.inputCacheMiss.toLocaleString()}</td>
+            <td class="cost-col">${r.requestCount.toLocaleString()}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function fetchFromApi() {
+  const token = document.getElementById('bearerToken').value.trim();
+  const month = document.getElementById('fetchMonth').value;
+  const year = document.getElementById('fetchYear').value;
+  const btn = document.getElementById('btnFetch');
+  const status = document.getElementById('fetchStatus');
+
+  if (!token) { status.textContent = 'No token. Use bookmarklet or paste manually.'; status.className = 'fetch-status error'; return; }
+
+  btn.disabled = true; btn.textContent = 'Fetching...';
+  status.textContent = 'Fetching from DeepSeek API...'; status.className = 'fetch-status';
+
+  try {
+    const resp = await fetch('/api/fetch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token || '', month, year })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+
+    // Parse cost CSV
+    if (data.cost) parseAndStore(data.cost, 'cost-'+year+'-'+month+'.csv', 'api-'+year+'-'+month);
+    // Parse amount CSV
+    if (data.amount) parseAndStore(data.amount, 'amount-'+year+'-'+month+'.csv', 'api-'+year+'-'+month);
+
+    renderAll();
+    status.textContent = `Loaded ${year}-${String(month).padStart(2,'0')} data from API.`;
+    status.className = 'fetch-status success';
+  } catch (err) {
+    status.textContent = err.message;
+    status.className = 'fetch-status error';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Fetch from API';
+  }
+}
+
+function resetAll() {
+  allRows = [];
+  renderAll();
+}
+</script>
+</body>
+</html>
