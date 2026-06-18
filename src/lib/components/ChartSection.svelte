@@ -132,7 +132,7 @@
 		</Card.Header>
 		<Card.Content class="flex-1">
 			{#if pieData.length > 0}
-				<Chart.Container config={pieConfig} class="mx-auto aspect-square max-h-[250px]">
+				<Chart.Container config={pieConfig} class="mx-auto w-full max-w-[350px] aspect-square">
 					<PieChart
 						data={pieData}
 						key="model"
