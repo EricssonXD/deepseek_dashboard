@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+
+#  curl 'https://platform.deepseek.com/api/v0/usage/amount?month=6&year=2026' \
+#   -H 'authorization: Bearer <your-deepseek-token>'
+
 """Static file server + DeepSeek API proxy. Zero dependencies beyond stdlib."""
 import http.server
 import json
@@ -10,6 +15,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 API_BASE = "https://platform.deepseek.com/api/v0/usage"
+TOKEN_FILE = ROOT / ".token"
+
+
+def _log(msg):
+    print(f"[server] {msg}", file=sys.stderr, flush=True)
 
 
 class ProxyHandler(http.server.SimpleHTTPRequestHandler):
@@ -44,7 +54,16 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
         if not token:
             self._json({"error": "Token required"}, 400)
             return
+        # Strip "Bearer " prefix if present — we only need the raw token
+        if token.lower().startswith("bearer "):
+            token = token[7:].strip()
         ProxyHandler._stored_token = token
+        # Persist to file so token survives server restart
+        try:
+            TOKEN_FILE.write_text(token)
+        except Exception as e:
+            _log(f"failed to persist token: {e}")
+        _log(f"token set (prefix: {token[:10]}..., len={len(token)})")
         self._json({"ok": True, "prefix": token[:20] + "..."})
 
     def _handle_get_token(self):
@@ -57,18 +76,19 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
         try:
             length = int(self.headers.get("Content-Length", 0))
             body = json.loads(self.rfile.read(length))
-            token = body.get("token", "").strip()
             month = str(body.get("month", 1))
             year = str(body.get("year", 2026))
         except Exception:
             self._json({"error": "Invalid request body"}, 400)
             return
 
+        # Always use stored token — token is set once via /api/set-token
+        token = ProxyHandler._stored_token
         if not token:
-            token = ProxyHandler._stored_token
-        if not token:
-            self._json({"error": "Bearer token required"}, 400)
+            self._json({"error": "No token stored. Use bookmarklet or paste token first."}, 400)
             return
+
+        _log(f"fetching {year}-{month} with token prefix {token[:10]}... (len={len(token)})")
 
         results = {}
         for kind in ("cost", "amount"):
@@ -79,9 +99,11 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
                     results[kind] = resp.read().decode("utf-8")
             except urllib.error.HTTPError as e:
                 body = e.read().decode("utf-8", errors="replace")
+                _log(f"DeepSeek API {e.code} for {kind}: {body[:200]}")
                 self._json({"error": f"DeepSeek API {e.code}: {body[:300]}"}, 502)
                 return
             except Exception as e:
+                _log(f"fetch failed for {kind}: {e}")
                 self._json({"error": f"Fetch failed: {str(e)}"}, 502)
                 return
 
@@ -106,6 +128,17 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
+
+    # Restore persisted token from previous run
+    if TOKEN_FILE.exists():
+        try:
+            persisted = TOKEN_FILE.read_text().strip()
+            if persisted:
+                ProxyHandler._stored_token = persisted
+                _log(f"restored token from .token (prefix: {persisted[:10]}..., len={len(persisted)})")
+        except Exception as e:
+            _log(f"failed to restore token: {e}")
+
     server = http.server.HTTPServer(("0.0.0.0", port), ProxyHandler)
     print(f"Server running at http://localhost:{port}")
     try:
