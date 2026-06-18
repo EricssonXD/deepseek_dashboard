@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { Arc, AreaChart, BarChart, PieChart, Text } from 'layerchart';
+	import { Arc, BarChart, LineChart, PieChart, Text } from 'layerchart';
 	import { scaleBand, scaleUtc } from 'd3-scale';
 	import { curveNatural } from 'd3-shape';
 	import { cubicInOut } from 'svelte/easing';
-	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import type { DailyKeyUsage, KeySummary } from '$lib/types/dashboard';
@@ -72,7 +71,7 @@
 
 	const totalCost = $derived(modelEntries.reduce((s, [, c]) => s + c, 0));
 
-	// ── Area: daily consumption per API key ──
+	// ── Line: daily consumption per API key ──
 	const dailyConfig = $derived<Chart.ChartConfig>(
 		Object.fromEntries(
 			dailyKeys.map((key, i) => [
@@ -199,28 +198,30 @@
 	</Card.Root>
 </div>
 
-<!-- Area Chart: Daily Consumption per API Key -->
+<!-- Line Chart: Daily Consumption per API Key -->
 {#if dailyData.length > 0}
 	<div class="px-6 pb-6">
 		<Card.Root>
 			<Card.Header>
 				<Card.Title class="text-sm text-foreground">Daily Consumption per API Key</Card.Title>
-				<Card.Description>Stacked daily cost across top {dailyKeys.length} keys</Card.Description>
+				<Card.Description>Daily cost across top {dailyKeys.length} keys</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				<Chart.Container config={dailyConfig}>
-					<AreaChart
+					<LineChart
+						points={{ r: 4 }}
 						data={dailyData}
 						x="date"
 						xScale={scaleUtc()}
+						axis="x"
 						series={dailySeries}
-						seriesLayout="overlap"
 						props={{
-							area: {
-								curve: curveNatural,
-								fillOpacity: 0.4,
-								line: { class: 'stroke-1' },
-								motion: 'tween'
+							spline: { curve: curveNatural, motion: 'tween', strokeWidth: 2 },
+							highlight: {
+								points: {
+									motion: 'none',
+									r: 6
+								}
 							},
 							xAxis: {
 								format: (v: Date) =>
@@ -229,17 +230,9 @@
 						}}
 					>
 						{#snippet tooltip()}
-							<Chart.Tooltip
-								labelFormatter={(v: Date) =>
-									v.toLocaleDateString('en-US', {
-										month: 'long',
-										day: 'numeric',
-										year: 'numeric'
-									})}
-								indicator="dot"
-							/>
+							<Chart.Tooltip hideLabel />
 						{/snippet}
-					</AreaChart>
+					</LineChart>
 				</Chart.Container>
 			</Card.Content>
 			<Card.Footer>
