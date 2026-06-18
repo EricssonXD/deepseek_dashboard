@@ -13,7 +13,7 @@
 
 	// ── State ──
 	let allRows: DashboardRow[] = $state([]);
-	let token = $state('');
+	let isConnected = $state(false);
 	let tokenPrefix = $state('');
 	let fetchMonth = $state(new Date().getMonth() + 1);
 	let fetchYear = $state(new Date().getFullYear());
@@ -21,7 +21,6 @@
 	let fetchStatus: FetchStatus = $state({ message: '', type: '' });
 
 	// ── Derived ──
-	const isConnected = $derived(token.length > 0);
 	const zipCount = $derived([...new Set(allRows.map((r) => r.zipName))].length);
 	const { keyList, modelTotals, grandTotal } = $derived(buildKeyStats(allRows));
 	const { dailyData, dailyKeys } = $derived(buildDailyUsage(allRows));
@@ -56,13 +55,11 @@
 	// ── Token polling ──
 	async function checkStoredToken() {
 		try {
-			const resp = await fetch('/api/get-token');
+			const resp = await fetch('/api/check-token');
 			const data = await resp.json();
-			if (data.token) {
-				token = data.token;
-				tokenPrefix = data.prefix || data.token.slice(0, 20) + '...';
-				return true;
-			}
+			isConnected = data.connected;
+			if (data.connected) tokenPrefix = data.prefix || '';
+			return data.connected;
 		} catch {
 			// server not running
 		}
@@ -70,6 +67,7 @@
 	}
 
 	$effect(() => {
+		checkStoredToken();
 		const interval = setInterval(async () => {
 			if (!isConnected) await checkStoredToken();
 		}, 3000);
@@ -97,7 +95,7 @@
 			});
 			const data = await resp.json();
 			if (resp.ok) {
-				token = t;
+				isConnected = true;
 				tokenPrefix = data.prefix || t.slice(0, 20) + '...';
 			}
 		} catch (err) {
@@ -106,7 +104,7 @@
 	}
 
 	async function fetchFromApi() {
-		if (!token) {
+		if (!isConnected) {
 			fetchStatus = { message: 'No token. Use bookmarklet or paste manually.', type: 'error' };
 			return;
 		}

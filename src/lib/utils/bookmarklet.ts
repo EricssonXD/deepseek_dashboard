@@ -22,6 +22,7 @@ export function buildBookmarkletCode(origin: string): string {
     if(TOKEN){
       fetch('${origin}/api/set-token',{
         method:'POST',
+        credentials:'include',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({token:TOKEN})
       }).then(function(r){return r.json()}).then(function(d){
