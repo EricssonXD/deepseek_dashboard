@@ -27,21 +27,41 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	const results: Record<string, string> = {};
 
+	const tokenPreview = token.slice(0, 10) + '...' + token.slice(-6);
+	console.log(`[fetch] token=${tokenPreview} month=${month} year=${year}`);
+
 	for (const kind of ['cost', 'amount'] as const) {
 		const url = `${API_BASE}/${kind}?month=${month}&year=${year}`;
 		try {
+			console.log(`[fetch] → ${url}`, `Authorization: Bearer ${tokenPreview}`);
 			const resp = await fetch(url, {
 				headers: { Authorization: `Bearer ${token}` },
 				signal: AbortSignal.timeout(30000)
 			});
+			const text = await resp.text();
+			console.log(`[fetch] ← ${resp.status} body[0:100]: ${text.slice(0, 100)}`);
+
+			// DeepSeek returns HTTP 200 with JSON error for auth failures
+			if (text.startsWith('{') && text.includes('"code"')) {
+				try {
+					const err = JSON.parse(text);
+					if (err.code && err.msg) {
+						return json(
+							{ error: `DeepSeek: ${err.msg} (code ${err.code})` },
+							{ status: 502 }
+						);
+					}
+				} catch { /* not JSON, continue as CSV */ }
+			}
+
 			if (!resp.ok) {
-				const text = await resp.text().catch(() => '');
 				return json(
-					{ error: `DeepSeek API ${resp.status}: ${text.slice(0, 300)}` },
+					{ error: `DeepSeek HTTP ${resp.status}: ${text.slice(0, 300)}` },
 					{ status: 502 }
 				);
 			}
-			results[kind] = await resp.text();
+
+			results[kind] = text;
 		} catch (err) {
 			return json(
 				{ error: `Fetch failed: ${err instanceof Error ? err.message : 'unknown'}` },
