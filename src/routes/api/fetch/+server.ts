@@ -1,8 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import JSZip from 'jszip';
-import { getToken } from '../token-store';
-import { getSessionId } from '../session';
 
 const EXPORT_URL = 'https://platform.deepseek.com/api/v0/usage/export';
 const SUMMARY_URL = 'https://platform.deepseek.com/api/v0/users/get_user_summary';
@@ -35,13 +33,13 @@ function parseSummary(raw: string) {
 
 function normalizeCostCSV(raw: string, keyLookup: Map<string, [string, string]>): string {
 	const lines = raw.split('\n');
-	const header = lines[0].split(',').map((h) => h.trim().replace(/^﻿/, '')); // strip BOM
+	const header = lines[0].split(',').map((h) => h.trim().replace(/^﻿/, ''));
 	const userIdIdx = header.findIndex((h) => h === 'user_id');
 	const dateIdx = header.findIndex((h) => h === 'utc_date');
 	const modelIdx = header.findIndex((h) => h === 'model');
 	const costIdx = header.findIndex((h) => h === 'cost');
 
-	if (userIdIdx < 0) return ''; // can't normalize without user_id
+	if (userIdIdx < 0) return '';
 
 	const rows: string[] = [CSV_COLS.join(',')];
 	for (let i = 1; i < lines.length; i++) {
@@ -57,27 +55,21 @@ function normalizeCostCSV(raw: string, keyLookup: Map<string, [string, string]>)
 	return rows.join('\n');
 }
 
-export const POST: RequestHandler = async ({ request, cookies, url }) => {
-	const sid = getSessionId(cookies, url);
-	let token = getToken(sid);
-
+export const POST: RequestHandler = async ({ request }) => {
+	let token: string;
 	let month: string;
 	let year: string;
 	try {
 		const body = await request.json();
+		token = (body.token || '').trim();
 		month = String(body.month || 1);
 		year = String(body.year || 2026);
-		// Fallback: body token
-		if (!token && body.token) token = String(body.token).trim();
 	} catch {
 		return json({ error: 'Invalid request body' }, { status: 400 });
 	}
 
 	if (!token) {
-		return json(
-			{ error: 'No token stored. Use bookmarklet or paste token first.' },
-			{ status: 400 }
-		);
+		return json({ error: 'No token provided.' }, { status: 400 });
 	}
 
 	if (token.toLowerCase().startsWith('bearer ')) {

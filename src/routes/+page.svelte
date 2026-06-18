@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import Header from '$lib/components/Header.svelte';
 	import TokenPanel from '$lib/components/TokenPanel.svelte';
 	import FetchPanel from '$lib/components/FetchPanel.svelte';
@@ -13,15 +12,15 @@
 
 	// ── State ──
 	let allRows: DashboardRow[] = $state([]);
-	let isConnected = $state(false);
+	let token = $state('');
 	let tokenPrefix = $state('');
-	let sessionId = $state('');
 	let fetchMonth = $state(new Date().getMonth() + 1);
 	let fetchYear = $state(new Date().getFullYear());
 	let isFetching = $state(false);
 	let fetchStatus: FetchStatus = $state({ message: '', type: '' });
 
 	// ── Derived ──
+	const isConnected = $derived(token.length > 0);
 	const zipCount = $derived([...new Set(allRows.map((r) => r.zipName))].length);
 	const { keyList, modelTotals, grandTotal } = $derived(buildKeyStats(allRows));
 	const { dailyData, dailyKeys } = $derived(buildDailyUsage(allRows));
@@ -51,38 +50,21 @@
 		})
 	);
 
-	const bookmarkletHref = $derived(buildBookmarkletCode($page.url.origin, sessionId));
+	const bookmarkletHref = $derived(buildBookmarkletCode());
 
-	// ── Token polling ──
+	// ── Load token from localStorage on mount, auto-fetch if valid ──
 	let autoFetched = $state(false);
 
-	async function checkStoredToken() {
-		try {
-			const url = new URL('/api/check-token', window.location.origin);
-			if (sessionId) url.searchParams.set('sid', sessionId);
-			const resp = await fetch(url);
-			const data = await resp.json();
-			isConnected = data.connected;
-			if (data.connected) tokenPrefix = data.prefix || '';
-			if (data.sid) sessionId = data.sid;
-			return data.connected;
-		} catch {
-			// server not running
-		}
-		return false;
-	}
-
 	$effect(() => {
-		checkStoredToken().then((connected) => {
-			if (connected && !autoFetched && allRows.length === 0) {
+		const stored = localStorage.getItem('ds_token');
+		if (stored && !token) {
+			token = stored;
+			tokenPrefix = stored.slice(0, 15) + '...';
+			if (!autoFetched && allRows.length === 0) {
 				autoFetched = true;
 				fetchFromApi();
 			}
-		});
-		const interval = setInterval(async () => {
-			if (!isConnected) await checkStoredToken();
-		}, 3000);
-		return () => clearInterval(interval);
+		}
 	});
 
 	// ── Handlers ──
@@ -97,40 +79,25 @@
 		fetchStatus = { message: '', type: '' };
 	}
 
-	async function onTokenPaste(t: string) {
-		try {
-			const url = new URL('/api/set-token', window.location.origin);
-			if (sessionId) url.searchParams.set('sid', sessionId);
-			const resp = await fetch(url, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ token: t })
-			});
-			const data = await resp.json();
-			if (resp.ok) {
-				isConnected = true;
-				tokenPrefix = data.prefix || t.slice(0, 15) + '...';
-			}
-		} catch (err) {
-			console.error('Failed to save token:', err);
-		}
+	function onTokenPaste(t: string) {
+		token = t;
+		tokenPrefix = t.slice(0, 15) + '...';
+		localStorage.setItem('ds_token', t);
 	}
 
 	async function fetchFromApi() {
-		if (!isConnected) {
-			fetchStatus = { message: 'No token. Use bookmarklet or paste manually.', type: 'error' };
+		if (!token) {
+			fetchStatus = { message: 'No token. Paste it first.', type: 'error' };
 			return;
 		}
 		isFetching = true;
 		fetchStatus = { message: 'Fetching from DeepSeek API...', type: 'loading' };
 
 		try {
-			const url = new URL('/api/fetch', window.location.origin);
-			if (sessionId) url.searchParams.set('sid', sessionId);
-			const resp = await fetch(url, {
+			const resp = await fetch('/api/fetch', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ month: fetchMonth, year: fetchYear })
+				body: JSON.stringify({ month: fetchMonth, year: fetchYear, token })
 			});
 			const data = await resp.json();
 			if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
@@ -185,7 +152,6 @@
 
 	<DropZone {onFiles} hasData={allRows.length > 0} />
 
-	<!-- Download link -->
 	<div class="px-6 pb-2 pt-2 text-center">
 		<a
 			href="https://platform.deepseek.com/usage"
