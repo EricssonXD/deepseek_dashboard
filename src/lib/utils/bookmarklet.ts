@@ -4,8 +4,8 @@ export function buildBookmarkletCode(): string {
     var isDeepSeek = host === 'platform.deepseek.com' || host === 'chat.deepseek.com';
 
     if (!isDeepSeek) {
-      // Not on DeepSeek — navigate there so localStorage is accessible, then re-click
-      window.location = 'https://platform.deepseek.com/#token-extract';
+      // Not on DeepSeek — open in new tab, then re-click bookmarklet there
+      window.open('https://platform.deepseek.com/#token-extract', '_blank');
       return;
     }
 
