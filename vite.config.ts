@@ -3,7 +3,13 @@ import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
+const allowedHost = process.env.ALLOWED_HOST;
+const allowedHosts = allowedHost ? [allowedHost] : [];
+
 export default defineConfig({
+	server: {
+		allowedHosts
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit({
