@@ -1,9 +1,19 @@
-// Server-side in-memory token store.
-// Survives across requests within the same process (like Python server).
+// Session-scoped token store.
+// Each browser session gets its own token, keyed by session ID.
+// Survives across requests within the same process.
 // Resets on server restart.
 
-export let storedToken: string | null = null;
+const tokens = new Map<string, string>();
 
-export function setToken(token: string) {
-	storedToken = token;
+export function getToken(sessionId: string | null): string | null {
+	if (!sessionId) return null;
+	return tokens.get(sessionId) || null;
+}
+
+export function setToken(sessionId: string, token: string) {
+	if (token) {
+		tokens.set(sessionId, token);
+	} else {
+		tokens.delete(sessionId);
+	}
 }

@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import JSZip from 'jszip';
-import { storedToken } from '../token-store';
+import { getToken } from '../token-store';
+import { getSessionId } from '../session';
 
 const EXPORT_URL = 'https://platform.deepseek.com/api/v0/usage/export';
 const SUMMARY_URL = 'https://platform.deepseek.com/api/v0/users/get_user_summary';
@@ -56,8 +57,9 @@ function normalizeCostCSV(raw: string, keyLookup: Map<string, [string, string]>)
 	return rows.join('\n');
 }
 
-export const POST: RequestHandler = async ({ request }) => {
-	let token = storedToken;
+export const POST: RequestHandler = async ({ request, cookies, url }) => {
+	const sid = getSessionId(cookies, url);
+	let token = getToken(sid);
 
 	let month: string;
 	let year: string;

@@ -15,6 +15,7 @@
 	let allRows: DashboardRow[] = $state([]);
 	let isConnected = $state(false);
 	let tokenPrefix = $state('');
+	let sessionId = $state('');
 	let fetchMonth = $state(new Date().getMonth() + 1);
 	let fetchYear = $state(new Date().getFullYear());
 	let isFetching = $state(false);
@@ -50,17 +51,20 @@
 		})
 	);
 
-	const bookmarkletHref = $derived(buildBookmarkletCode($page.url.origin));
+	const bookmarkletHref = $derived(buildBookmarkletCode($page.url.origin, sessionId));
 
 	// ── Token polling ──
 	let autoFetched = $state(false);
 
 	async function checkStoredToken() {
 		try {
-			const resp = await fetch('/api/check-token');
+			const url = new URL('/api/check-token', window.location.origin);
+			if (sessionId) url.searchParams.set('sid', sessionId);
+			const resp = await fetch(url);
 			const data = await resp.json();
 			isConnected = data.connected;
 			if (data.connected) tokenPrefix = data.prefix || '';
+			if (data.sid) sessionId = data.sid;
 			return data.connected;
 		} catch {
 			// server not running
@@ -95,7 +99,9 @@
 
 	async function onTokenPaste(t: string) {
 		try {
-			const resp = await fetch('/api/set-token', {
+			const url = new URL('/api/set-token', window.location.origin);
+			if (sessionId) url.searchParams.set('sid', sessionId);
+			const resp = await fetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ token: t })
@@ -119,7 +125,9 @@
 		fetchStatus = { message: 'Fetching from DeepSeek API...', type: 'loading' };
 
 		try {
-			const resp = await fetch('/api/fetch', {
+			const url = new URL('/api/fetch', window.location.origin);
+			if (sessionId) url.searchParams.set('sid', sessionId);
+			const resp = await fetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ month: fetchMonth, year: fetchYear })

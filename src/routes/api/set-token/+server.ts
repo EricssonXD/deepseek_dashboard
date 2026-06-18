@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { setToken } from '../token-store';
+import { getSessionId } from '../session';
 
 function corsHeaders(origin: string | null) {
 	return {
@@ -11,8 +12,9 @@ function corsHeaders(origin: string | null) {
 	};
 }
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, cookies, url }) => {
 	const origin = request.headers.get('origin');
+	const sid = getSessionId(cookies, url);
 
 	try {
 		const body = await request.json();
@@ -24,8 +26,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			token = token.slice(7).trim();
 		}
 
-		setToken(token);
-		console.log(`[set-token] prefix=${token.slice(0, 10)}... len=${token.length}`);
+		setToken(sid, token);
+		console.log(`[set-token] sid=${sid.slice(0, 8)} prefix=${token.slice(0, 10)}... len=${token.length}`);
 
 		const prefix = token.slice(0, 15) + '...';
 		return json({ ok: true, prefix }, { headers: corsHeaders(origin) });
@@ -34,7 +36,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 };
 
-export const OPTIONS: RequestHandler = async ({ request }) => {
+export const OPTIONS: RequestHandler = async ({ request, cookies, url }) => {
 	const origin = request.headers.get('origin');
+	getSessionId(cookies, url); // ensure session cookie is set
 	return new Response(null, { status: 204, headers: corsHeaders(origin) });
 };
