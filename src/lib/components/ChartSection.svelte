@@ -214,7 +214,7 @@
 						x="date"
 						xScale={scaleUtc()}
 						series={dailySeries}
-						seriesLayout="stack"
+						seriesLayout="overlap"
 						props={{
 							area: {
 								curve: curveNatural,
