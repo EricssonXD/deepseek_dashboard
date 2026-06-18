@@ -1,0 +1,285 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-18T00:00:00.000Z",
+  "title": "Design System: DeepSeek Usage Dashboard",
+  "extensions": {
+    "colorMeta": {
+      "abyss-blue": {
+        "role": "primary",
+        "displayName": "Abyss Blue",
+        "canonical": "oklch(0.65 0.2 250)",
+        "tonalRamp": [
+          "oklch(0.15 0.2 250)",
+          "oklch(0.25 0.2 250)",
+          "oklch(0.35 0.2 250)",
+          "oklch(0.45 0.2 250)",
+          "oklch(0.55 0.2 250)",
+          "oklch(0.65 0.2 250)",
+          "oklch(0.75 0.2 250)",
+          "oklch(0.85 0.2 250)"
+        ]
+      },
+      "void-black": {
+        "role": "neutral",
+        "displayName": "Void Black",
+        "canonical": "oklch(0.145 0 0)",
+        "tonalRamp": [
+          "oklch(0.10 0 0)",
+          "oklch(0.12 0 0)",
+          "oklch(0.145 0 0)",
+          "oklch(0.17 0 0)",
+          "oklch(0.20 0 0)",
+          "oklch(0.25 0 0)",
+          "oklch(0.30 0 0)",
+          "oklch(0.40 0 0)"
+        ]
+      },
+      "void-deep": {
+        "role": "neutral",
+        "displayName": "Void Deep",
+        "canonical": "oklch(0.155 0 0)",
+        "tonalRamp": [
+          "oklch(0.11 0 0)",
+          "oklch(0.13 0 0)",
+          "oklch(0.155 0 0)",
+          "oklch(0.18 0 0)",
+          "oklch(0.21 0 0)",
+          "oklch(0.26 0 0)",
+          "oklch(0.32 0 0)",
+          "oklch(0.42 0 0)"
+        ]
+      },
+      "slate-surface": {
+        "role": "neutral",
+        "displayName": "Slate Surface",
+        "canonical": "oklch(0.22 0 0)",
+        "tonalRamp": [
+          "oklch(0.15 0 0)",
+          "oklch(0.18 0 0)",
+          "oklch(0.22 0 0)",
+          "oklch(0.28 0 0)",
+          "oklch(0.35 0 0)",
+          "oklch(0.45 0 0)",
+          "oklch(0.55 0 0)",
+          "oklch(0.70 0 0)"
+        ]
+      },
+      "ghost-white": {
+        "role": "neutral",
+        "displayName": "Ghost White",
+        "canonical": "oklch(0.985 0 0)",
+        "tonalRamp": [
+          "oklch(0.70 0 0)",
+          "oklch(0.78 0 0)",
+          "oklch(0.85 0 0)",
+          "oklch(0.90 0 0)",
+          "oklch(0.94 0 0)",
+          "oklch(0.97 0 0)",
+          "oklch(0.985 0 0)",
+          "oklch(0.995 0 0)"
+        ]
+      },
+      "ash-gray": {
+        "role": "neutral",
+        "displayName": "Ash Gray",
+        "canonical": "oklch(0.55 0 0)",
+        "tonalRamp": [
+          "oklch(0.35 0 0)",
+          "oklch(0.42 0 0)",
+          "oklch(0.50 0 0)",
+          "oklch(0.55 0 0)",
+          "oklch(0.60 0 0)",
+          "oklch(0.68 0 0)",
+          "oklch(0.78 0 0)",
+          "oklch(0.88 0 0)"
+        ]
+      },
+      "burn-red": {
+        "role": "semantic",
+        "displayName": "Burn Red",
+        "canonical": "oklch(0.55 0.15 25)",
+        "tonalRamp": [
+          "oklch(0.20 0.15 25)",
+          "oklch(0.30 0.15 25)",
+          "oklch(0.40 0.15 25)",
+          "oklch(0.50 0.15 25)",
+          "oklch(0.55 0.15 25)",
+          "oklch(0.65 0.15 25)",
+          "oklch(0.75 0.15 25)",
+          "oklch(0.85 0.15 25)"
+        ]
+      },
+      "signal-green": {
+        "role": "semantic",
+        "displayName": "Signal Green",
+        "canonical": "oklch(0.7 0.18 145)",
+        "tonalRamp": [
+          "oklch(0.30 0.18 145)",
+          "oklch(0.40 0.18 145)",
+          "oklch(0.50 0.18 145)",
+          "oklch(0.60 0.18 145)",
+          "oklch(0.70 0.18 145)",
+          "oklch(0.78 0.18 145)",
+          "oklch(0.85 0.18 145)",
+          "oklch(0.92 0.18 145)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Body",
+        "purpose": "All UI text: headings, buttons, labels, data, prose. Single sans family throughout."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "API key masks, code snippets, tabular numbers where identity matters."
+      }
+    },
+    "shadows": [
+      {
+        "name": "hover-lift",
+        "value": "0 2px 8px rgba(0,0,0,0.3)",
+        "purpose": "Buttons and interactive cards on hover. Subtle, never decorative."
+      },
+      {
+        "name": "elevated-surface",
+        "value": "0 4px 16px rgba(0,0,0,0.4)",
+        "purpose": "Dropdowns, popovers, dialogs when open. Only applied during interaction."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Default easing for hover transitions, color shifts, and opacity changes. 150-250ms."
+      },
+      {
+        "name": "ease-chart",
+        "value": "cubic-bezier(0.37, 0, 0.63, 1)",
+        "purpose": "Chart bar/line entry animations. 500ms, cubic-in-out. Data deserves a beat, nothing more."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single most important action on any view. Abyss Blue, used sparingly.",
+      "html": "<button class=\"ds-btn-primary\">Fetch Data</button>",
+      "css": ".ds-btn-primary {\n  background: oklch(0.65 0.2 250);\n  color: oklch(0.985 0 0);\n  padding: 0.5rem 1rem;\n  font-family: Inter, system-ui, -apple-system, sans-serif;\n  font-size: 0.875rem;\n  font-weight: 500;\n  line-height: 1.25;\n  border: 1px solid transparent;\n  border-radius: 8px;\n  cursor: pointer;\n  transition: background 0.15s ease, transform 0.15s ease;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 0.375rem;\n  height: 32px;\n  white-space: nowrap;\n  outline: none;\n}\n.ds-btn-primary:hover {\n  background: oklch(0.58 0.2 250);\n}\n.ds-btn-primary:focus-visible {\n  box-shadow: 0 0 0 3px oklch(0.45 0 0);\n}\n.ds-btn-primary:active {\n  transform: translateY(1px);\n}\n.ds-btn-primary:disabled {\n  opacity: 0.5;\n  pointer-events: none;\n}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Default secondary action. Border-defined, fills on hover.",
+      "html": "<button class=\"ds-btn-outline\">Clear All</button>",
+      "css": ".ds-btn-outline {\n  background: oklch(0.145 0 0);\n  color: oklch(0.985 0 0);\n  padding: 0.5rem 1rem;\n  font-family: Inter, system-ui, -apple-system, sans-serif;\n  font-size: 0.875rem;\n  font-weight: 500;\n  line-height: 1.25;\n  border: 1px solid oklch(0.22 0 0);\n  border-radius: 8px;\n  cursor: pointer;\n  transition: background 0.15s ease;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 0.375rem;\n  height: 32px;\n  white-space: nowrap;\n  outline: none;\n}\n.ds-btn-outline:hover {\n  background: oklch(0.22 0 0);\n}\n.ds-btn-outline:focus-visible {\n  box-shadow: 0 0 0 3px oklch(0.45 0 0);\n}\n.ds-btn-outline:active {\n  transform: translateY(1px);\n}\n.ds-btn-outline:disabled {\n  opacity: 0.5;\n  pointer-events: none;\n}"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Content container. Void Deep background with subtle border. Flat at rest.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><h3 class=\"ds-card-title\">Total Cost</h3></div><div class=\"ds-card-content\"><p class=\"ds-card-metric\">$12.3456</p></div></div>",
+      "css": ".ds-card {\n  background: oklch(0.155 0 0);\n  color: oklch(0.985 0 0);\n  border: 1px solid oklch(0.22 0 0);\n  border-radius: 8px;\n  overflow: hidden;\n}\n.ds-card-header {\n  padding: 1.5rem 1.5rem 0.5rem 1.5rem;\n}\n.ds-card-title {\n  font-family: Inter, system-ui, -apple-system, sans-serif;\n  font-size: 0.75rem;\n  font-weight: 400;\n  line-height: 1.5;\n  letter-spacing: 0.05em;\n  text-transform: uppercase;\n  color: oklch(0.55 0 0);\n  margin: 0;\n}\n.ds-card-content {\n  padding: 0.5rem 1.5rem 1.5rem 1.5rem;\n}\n.ds-card-metric {\n  font-family: Inter, system-ui, -apple-system, sans-serif;\n  font-size: 1.875rem;\n  font-weight: 700;\n  line-height: 1.2;\n  color: oklch(0.985 0 0);\n  margin: 0;\n}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard text field. Void background, border-defined, blue focus.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Paste token here...\" />",
+      "css": ".ds-input {\n  background: oklch(0.145 0 0);\n  color: oklch(0.985 0 0);\n  padding: 0.5rem 0.75rem;\n  font-family: Inter, system-ui, -apple-system, sans-serif;\n  font-size: 0.875rem;\n  line-height: 1.5;\n  border: 1px solid oklch(0.22 0 0);\n  border-radius: 8px;\n  width: 100%;\n  outline: none;\n  transition: border-color 0.15s ease;\n}\n.ds-input::placeholder {\n  color: oklch(0.55 0 0);\n}\n.ds-input:focus {\n  border-color: oklch(0.65 0.2 250);\n}"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge-outline",
+      "description": "Model name tag. Subtle Abyss Blue tint, non-interactive.",
+      "html": "<span class=\"ds-badge\">deepseek-chat</span>",
+      "css": ".ds-badge {\n  display: inline-flex;\n  align-items: center;\n  padding: 0.125rem 0.625rem;\n  font-family: Inter, system-ui, -apple-system, sans-serif;\n  font-size: 0.75rem;\n  font-weight: 500;\n  line-height: 1.5;\n  color: oklch(0.65 0.2 250);\n  background: oklch(0.65 0.2 250 / 0.1);\n  border: 1px solid oklch(0.65 0.2 250 / 0.25);\n  border-radius: 6px;\n  white-space: nowrap;\n}"
+    },
+    {
+      "name": "Status Dot (Connected)",
+      "kind": "custom",
+      "refersTo": "status-connected",
+      "description": "12px Signal Green circle. No animation. Paired with label text.",
+      "html": "<span class=\"ds-status-dot ds-status-connected\"></span>",
+      "css": ".ds-status-dot {\n  display: inline-block;\n  width: 12px;\n  height: 12px;\n  border-radius: 50%;\n  flex-shrink: 0;\n}\n.ds-status-connected {\n  background: oklch(0.7 0.18 145);\n}\n.ds-status-disconnected {\n  background: oklch(0.55 0.15 25);\n}"
+    },
+    {
+      "name": "Table Header Row",
+      "kind": "custom",
+      "refersTo": "table-header",
+      "description": "Data table with muted header, border-separated rows, tabular numbers.",
+      "html": "<table class=\"ds-table\"><thead><tr class=\"ds-table-header-row\"><th class=\"ds-table-head\">API Key Name</th><th class=\"ds-table-head ds-table-head-right\">Cost (USD)</th></tr></thead><tbody><tr class=\"ds-table-row\"><td class=\"ds-table-cell\">My Key</td><td class=\"ds-table-cell ds-table-cell-right\">$1.2345</td></tr></tbody></table>",
+      "css": ".ds-table {\n  width: 100%;\n  border-collapse: collapse;\n  font-family: Inter, system-ui, -apple-system, sans-serif;\n  font-size: 0.875rem;\n  line-height: 1.5;\n  color: oklch(0.985 0 0);\n}\n.ds-table-header-row {\n  background: oklch(0.22 0 0);\n}\n.ds-table-head {\n  padding: 0.75rem 1rem;\n  font-size: 0.75rem;\n  font-weight: 400;\n  text-transform: uppercase;\n  letter-spacing: 0.05em;\n  color: oklch(0.55 0 0);\n  text-align: left;\n}\n.ds-table-head-right {\n  text-align: right;\n}\n.ds-table-row {\n  border-bottom: 1px solid oklch(0.22 0 0);\n  transition: background 0.1s ease;\n}\n.ds-table-row:hover {\n  background: oklch(0.22 0 0 / 0.5);\n}\n.ds-table-cell {\n  padding: 0.75rem 1rem;\n  font-size: 0.875rem;\n}\n.ds-table-cell-right {\n  text-align: right;\n  font-variant-numeric: tabular-nums;\n}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Dark Observatory",
+    "overview": "This is an interface for staring at data in the dark. Like an astronomer at a console, the user sits in a dim room, focused on signals against a void. Every element on screen earns its place by conveying information; decoration is noise that obscures the data.\n\nThe system is dark by necessity — long-screen sessions tracking costs — but it's not a black void. Three tonal layers (void-black background, void-deep cards, slate-surface accents) create depth through luminance steps alone. The single accent, Abyss Blue, appears only where action or focus is required: primary buttons, selected states, data highlights, links. Its rarity is the point.\n\nThis system rejects the SaaS-dashboard defaults: no gradient hero metrics, no identical icon-card grids, no glass panels, no warm-tinted backgrounds. It is sharp, restrained, legible — a tool that disappears into the task of understanding cost.",
+    "keyCharacteristics": [
+      "Dark-first, layered through luminance, not shadow",
+      "Single accent color at ≤10% surface coverage",
+      "Typography-driven hierarchy — weight and size carry meaning, not color",
+      "Flat at rest; shadows appear only on interaction",
+      "Data-dense but never cluttered; every pixel answers a cost question"
+    ],
+    "rules": [
+      {
+        "name": "The One Voice Rule",
+        "body": "Abyss Blue is the only accent color on the page. No secondary accent, no tertiary. Semantic colors (Burn Red, Signal Green) are state indicators, not decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Luminance Ladder Rule",
+        "body": "Depth is conveyed through background lightness steps (0.145 → 0.155 → 0.22), never through shadow or border at rest. If a surface needs to stand out, make it lighter, not outlined.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "A single sans family for all UI text. Mono is reserved for data identity (keys, masks) and tabular alignment, not for headings or labels.",
+        "section": "typography"
+      },
+      {
+        "name": "The Weight-Only Emphasis Rule",
+        "body": "Emphasis is conveyed through font-weight (400 → 500 → 600 → 700), never through color, italic, or underline in body text. Color carries state; weight carries hierarchy.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hover-Only Lift Rule",
+        "body": "Shadows appear exclusively as interaction feedback: a button on hover, a card on drag, a dropdown on open. If nothing is being interacted with, nothing casts a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use the Luminance Ladder (void-black → void-deep → slate-surface) to establish surface hierarchy.",
+      "Do limit Abyss Blue to ≤10% of any screen. Primary buttons, focus rings, selected states, links: nothing else.",
+      "Do use tabular-nums for all numeric data in tables and metric cards.",
+      "Do prefer border separation over shadow for adjacent surfaces at the same level.",
+      "Do keep card internal padding consistent at 1.5rem.",
+      "Do use the mono stack for API key masks and code-level data identity.",
+      "Do convey emphasis through font-weight alone (400 → 500 → 600 → 700)."
+    ],
+    "donts": [
+      "Don't add a second accent color. Abyss Blue is the only one.",
+      "Don't use gradient text, glassmorphism, or side-stripe borders.",
+      "Don't use border-radius above 12px on cards or inputs.",
+      "Don't pair 1px border with box-shadow blur ≥16px on the same element.",
+      "Don't add shadows to static surfaces. Shadows are interaction feedback only.",
+      "Don't use warm-tinted backgrounds (cream, sand, beige, paper).",
+      "Don't add decorative motion — no page-load choreography, no bounce, no elastic.",
+      "Don't use display fonts, serifs, or decorative type.",
+      "Don't use icons as decoration.",
+      "Don't ship a modal without exhausting inline/progressive alternatives first."
+    ]
+  }
+}
