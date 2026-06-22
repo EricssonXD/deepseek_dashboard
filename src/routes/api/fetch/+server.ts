@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+import { dev } from '$app/environment';
 import type { RequestHandler } from './$types';
 import JSZip from 'jszip';
 
@@ -7,7 +8,7 @@ const SUMMARY_URL = 'https://platform.deepseek.com/api/v0/users/get_user_summary
 const CSV_COLS = ['utc_date', 'model', 'api_key', 'api_key_name', 'type', 'price', 'amount', 'cost'];
 
 function log(msg: string) {
-	console.log(`[fetch] ${msg}`);
+	if (dev) console.log(`[fetch] ${msg}`);
 }
 
 async function apiFetch(url: string, token: string) {
