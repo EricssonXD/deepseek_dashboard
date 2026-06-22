@@ -27,17 +27,33 @@
 
 	let dailyTab = $state<'today' | '30d'>('30d');
 
-	const CHART_COLORS = [
-		'oklch(0.62 0.22 185)',  // teal
-		'oklch(0.58 0.28 280)',  // violet
-		'oklch(0.57 0.26 25)',   // red
-		'oklch(0.64 0.24 95)',   // yellow
-		'oklch(0.58 0.26 142)',  // green
-		'oklch(0.57 0.25 255)',  // blue
-		'oklch(0.56 0.26 330)',  // magenta
-		'oklch(0.60 0.26 55)',   // orange
-		'oklch(0.62 0.26 120)',  // lime
+	// Each color with its own tuned L/C. Hue shifts with --primary.
+	const COLOR_DEFS = [
+		{ l: 0.62, c: 0.22, h: 185 },  // teal
+		{ l: 0.58, c: 0.28, h: 280 },  // violet
+		{ l: 0.57, c: 0.26, h: 25 },   // red
+		{ l: 0.64, c: 0.24, h: 95 },   // yellow
+		{ l: 0.58, c: 0.26, h: 142 },  // green
+		{ l: 0.57, c: 0.25, h: 255 },  // blue
+		{ l: 0.56, c: 0.26, h: 330 },  // magenta
+		{ l: 0.60, c: 0.26, h: 55 },   // orange
+		{ l: 0.62, c: 0.26, h: 120 },  // lime
 	];
+
+	let hueShift = $state(0);
+
+	$effect(() => {
+		const raw = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+		const m = raw.match(/oklch\(([\d.]+)\s+[\d.]+\s+([\d.]+)/);
+		if (m) hueShift = parseFloat(m[2]) - 185;
+	});
+
+	const CHART_COLORS = $derived(
+		COLOR_DEFS.map(d => {
+			const h = ((d.h + hueShift) % 360 + 360) % 360;
+			return `oklch(${d.l} ${d.c} ${Math.round(h)})`;
+		})
+	);
 
 	// ── Bar ──
 	const topKeys = $derived(keyList.slice(0, 15));
