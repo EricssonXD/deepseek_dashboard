@@ -14,8 +14,8 @@
 </script>
 
 <div class="px-6 pb-6">
-	<h3 class="mb-3 text-sm font-medium text-foreground">API Key Breakdown</h3>
-	<div class="overflow-x-auto rounded-lg border border-border">
+	<h3 class="mb-3 text-sm font-semibold text-foreground">API Key Breakdown</h3>
+	<div class="overflow-x-auto rounded-xl border border-border/50">
 		<Table>
 			<TableHeader>
 				<TableRow class="border-border bg-muted hover:bg-muted">
@@ -57,7 +57,7 @@
 							<TableCell>
 								<div class="flex flex-wrap gap-1">
 									{#each row.models.split(', ') as model}
-										<Badge variant="outline" class="border-primary/25 bg-primary/10 text-primary">
+										<Badge variant="outline" class="border-primary/30 bg-primary/10 text-primary">
 											{model}
 										</Badge>
 									{/each}

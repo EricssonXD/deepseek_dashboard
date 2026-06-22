@@ -72,7 +72,7 @@
 	const activeSeries = $derived(dailyTab === 'today' ? todaySeries : dailySeries);
 </script>
 
-<div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 px-6 pb-6">
+<div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5 px-6 pb-6">
 	{#if loading}
 		<Card.Root>
 			<Card.Header>
@@ -95,7 +95,7 @@
 	{:else}
 		<Card.Root>
 		<Card.Header>
-			<Card.Title class="text-sm font-medium text-foreground">Cost per API Key</Card.Title>
+			<Card.Title class="text-sm font-semibold text-foreground">Cost per API Key</Card.Title>
 			<Card.Description>Top {barData.length} keys by spend</Card.Description>
 		</Card.Header>
 		<Card.Content>
@@ -133,7 +133,7 @@
 	<!-- Pie: Cost per Model -->
 	<Card.Root class="flex flex-col">
 		<Card.Header class="items-center">
-			<Card.Title class="text-sm font-medium text-foreground">Cost per Model</Card.Title>
+			<Card.Title class="text-sm font-semibold text-foreground">Cost per Model</Card.Title>
 			<Card.Description>Total cost by model</Card.Description>
 		</Card.Header>
 		<Card.Content class="flex-1">
@@ -180,7 +180,7 @@
 			<Card.Header>
 				<div class="flex items-center justify-between">
 					<div>
-						<Card.Title class="text-sm font-medium text-foreground">Consumption per API Key</Card.Title>
+						<Card.Title class="text-sm font-semibold text-foreground">Consumption per API Key</Card.Title>
 						<Card.Description>Daily cost across top {dailyKeys.length} keys</Card.Description>
 					</div>
 				</div>
