@@ -3,41 +3,41 @@
 @plugin '@tailwindcss/typography';
 
 :root {
-	/* Rich Dark palette — tinted neutrals toward violet (280°), chroma 0.02-0.04 */
-	--background: oklch(0.12 0.015 275);
-	--foreground: oklch(0.97 0.002 275);
-	--card: oklch(0.155 0.025 275);
-	--card-foreground: oklch(0.97 0.002 275);
-	--popover: oklch(0.175 0.03 275);
-	--popover-foreground: oklch(0.97 0.002 275);
-	--primary: oklch(0.60 0.28 280);
+	/* Rich Dark palette — tinted neutrals toward teal (185°), chroma 0.01-0.025 */
+	--background: oklch(0.12 0.01 185);
+	--foreground: oklch(0.97 0.002 185);
+	--card: oklch(0.155 0.02 185);
+	--card-foreground: oklch(0.97 0.002 185);
+	--popover: oklch(0.175 0.025 185);
+	--popover-foreground: oklch(0.97 0.002 185);
+	--primary: oklch(0.52 0.10 188);
 	--primary-foreground: oklch(0.99 0 0);
-	--secondary: oklch(0.20 0.03 275);
-	--secondary-foreground: oklch(0.97 0.002 275);
-	--muted: oklch(0.20 0.03 275);
-	--muted-foreground: oklch(0.65 0.015 275);
-	--accent: oklch(0.24 0.04 275);
-	--accent-foreground: oklch(0.97 0.002 275);
+	--secondary: oklch(0.20 0.02 185);
+	--secondary-foreground: oklch(0.97 0.002 185);
+	--muted: oklch(0.20 0.02 185);
+	--muted-foreground: oklch(0.65 0.01 185);
+	--accent: oklch(0.24 0.03 185);
+	--accent-foreground: oklch(0.97 0.002 185);
 	--destructive: oklch(0.60 0.20 22);
 	--destructive-foreground: oklch(0.99 0 0);
-	--border: oklch(0.24 0.025 275);
-	--input: oklch(0.175 0.02 275);
-	--ring: oklch(0.55 0.20 280);
+	--border: oklch(0.24 0.02 185);
+	--input: oklch(0.175 0.015 185);
+	--ring: oklch(0.50 0.10 188);
 	--radius: 0.5rem;
 
 	--success: oklch(0.68 0.20 150);
 	--success-foreground: oklch(0.99 0 0);
 
-	/* Chart colors — vibrant, cohesive with the violet-tinted theme */
-	--chart-1: oklch(0.62 0.28 280);
-	--chart-2: oklch(0.65 0.20 170);
-	--chart-3: oklch(0.72 0.22 80);
-	--chart-4: oklch(0.60 0.25 330);
-	--chart-5: oklch(0.58 0.25 15);
-	--chart-6: oklch(0.62 0.22 300);
-	--chart-7: oklch(0.65 0.18 55);
-	--chart-8: oklch(0.58 0.22 210);
-	--chart-9: oklch(0.55 0.25 35);
+	/* Chart colors — cohesive with muted teal theme */
+	--chart-1: oklch(0.52 0.10 188);
+	--chart-2: oklch(0.58 0.12 210);
+	--chart-3: oklch(0.65 0.15 80);
+	--chart-4: oklch(0.55 0.12 320);
+	--chart-5: oklch(0.56 0.18 15);
+	--chart-6: oklch(0.55 0.12 280);
+	--chart-7: oklch(0.60 0.12 55);
+	--chart-8: oklch(0.50 0.00 0);
+	--chart-9: oklch(0.52 0.15 35);
 }
 
 @theme inline {
