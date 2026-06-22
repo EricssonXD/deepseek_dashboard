@@ -45,7 +45,7 @@
 	const CHART_COLORS = $derived(
 		Array.from({ length: 9 }, (_, i) => {
 			const h = (primaryH + i * 40) % 360;
-			return `oklch(0.58 0.25 ${Math.round(h)})`;
+			return `oklch(0.60 0.28 ${Math.round(h)})`;
 		})
 	);
 
