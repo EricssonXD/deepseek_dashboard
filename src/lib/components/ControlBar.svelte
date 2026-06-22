@@ -97,6 +97,45 @@
 		if (month === 12) { onMonthChange(1); onYearChange(year + 1); }
 		else { onMonthChange(month + 1); }
 	}
+
+	// ── Month picker ──
+	let showPicker = $state(false);
+	let pickerYear = $state(year);
+	let pickerRef: HTMLDivElement | undefined = $state();
+
+	const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+	$effect(() => { pickerYear = year; });
+
+	function openPicker() {
+		showPicker = true;
+	}
+
+	function selectMonth(m: number) {
+		onMonthChange(m);
+		onYearChange(pickerYear);
+		showPicker = false;
+	}
+
+	function handlePickerKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') showPicker = false;
+	}
+
+	$effect(() => {
+		if (!showPicker) return;
+		let cleanup: (() => void) | undefined;
+		const t = setTimeout(() => {
+			function clickOutside(e: MouseEvent) {
+				if (pickerRef && !pickerRef.contains(e.target as Node)) showPicker = false;
+			}
+			document.addEventListener('click', clickOutside);
+			cleanup = () => document.removeEventListener('click', clickOutside);
+		}, 0);
+		return () => {
+			clearTimeout(t);
+			cleanup?.();
+		};
+	});
 </script>
 
 <div class="mx-6 mt-6 overflow-hidden rounded-xl border border-border/50 bg-card">
@@ -173,7 +212,7 @@
 		<div class="flex flex-col gap-4 sm:flex-row sm:gap-6">
 			<!-- API fetch -->
 			<div class="flex flex-wrap items-center gap-2 sm:flex-1">
-				<div class="inline-flex items-center rounded-lg border border-border bg-background">
+				<div class="relative inline-flex items-center rounded-lg border border-border bg-background">
 					<button
 						class="flex size-8 items-center justify-center rounded-l-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring focus-visible:outline-none"
 						onclick={prevMonth}
@@ -181,7 +220,11 @@
 					>
 						<svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
 					</button>
-					<span class="min-w-[8.5rem] px-3 text-center text-sm font-medium text-foreground tabular-nums">{monthLabel}</span>
+					<button
+						class="min-w-[8.5rem] px-3 text-center text-sm font-medium text-foreground tabular-nums transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring focus-visible:outline-none"
+						onclick={openPicker}
+						aria-label="Pick month and year"
+					>{monthLabel}</button>
 					<button
 						class="flex size-8 items-center justify-center rounded-r-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring focus-visible:outline-none"
 						onclick={nextMonth}
@@ -189,6 +232,51 @@
 					>
 						<svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
 					</button>
+
+					<!-- Month/year picker popover -->
+					{#if showPicker}
+						<div
+							bind:this={pickerRef}
+							class="absolute left-0 top-full z-50 mt-1 w-56 rounded-xl border border-border/60 bg-popover p-3 shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
+							role="dialog"
+							aria-label="Month picker"
+							onkeydown={handlePickerKeydown}
+						>
+							<!-- Year nav -->
+							<div class="mb-2 flex items-center justify-between">
+								<button
+									class="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+									onclick={() => { pickerYear--; }}
+									aria-label="Previous year"
+								>
+									<svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+								</button>
+								<span class="text-sm font-semibold text-foreground tabular-nums">{pickerYear}</span>
+								<button
+									class="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+									onclick={() => { pickerYear++; }}
+									aria-label="Next year"
+								>
+									<svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+								</button>
+							</div>
+							<!-- Month grid -->
+							<div class="grid grid-cols-3 gap-1">
+								{#each MONTH_NAMES as name, i}
+									{@const m = i + 1}
+									<button
+										class="rounded-lg px-2 py-1.5 text-xs font-medium transition-colors
+											{m === month && pickerYear === year
+												? 'bg-primary text-primary-foreground'
+												: 'text-foreground hover:bg-muted'}"
+										onclick={() => selectMonth(m)}
+									>
+										{name}
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
 				</div>
 				<Button size="sm" onclick={onFetch} disabled={fetchDisabled}>
 					{#if isFetching}
