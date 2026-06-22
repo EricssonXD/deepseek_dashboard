@@ -36,40 +36,42 @@
 			{/each}
 		</div>
 	{:else}
-		<!-- Hero: Total Cost — full width, largest -->
-		<Card class="mb-4 border-primary/20">
-			<CardHeader>
-				<CardTitle class="text-sm font-medium text-foreground">Total Cost</CardTitle>
+		<!-- Hero: Total Cost — committed accent, dramatic scale -->
+		<Card class="mb-6 border-primary/30 bg-primary/5">
+			<CardHeader class="pb-2">
+				<CardTitle class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Cost</CardTitle>
 			</CardHeader>
-			<CardContent class="flex items-baseline gap-2">
-				<span class="text-4xl font-bold tabular-nums text-foreground">
+			<CardContent class="flex items-baseline gap-3">
+				<span class="text-5xl font-black tabular-nums tracking-tight text-foreground">
 					${grandTotal.toFixed(4)}
 				</span>
-				<span class="text-sm text-muted-foreground">USD</span>
+				<span class="text-base font-medium text-muted-foreground">USD</span>
 			</CardContent>
 		</Card>
 
-		<!-- Secondary metrics row -->
+		<!-- Secondary metrics row — stronger weight contrast -->
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
 			<Card>
 				<CardHeader>
 					<CardTitle class="text-sm font-medium text-foreground">API Keys</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<p class="text-2xl font-semibold tabular-nums text-foreground">{keyList.length}</p>
-					<p class="text-xs text-muted-foreground">{topKey ? `Top: ${topKey.apiKeyName}` : ''}</p>
+					<p class="text-3xl font-bold tabular-nums text-foreground">{keyList.length}</p>
+					{#if topKey}
+						<p class="mt-1 text-xs text-muted-foreground">{topKey.apiKeyName}</p>
+					{/if}
 				</CardContent>
 			</Card>
 
 			<Card>
 				<CardHeader>
-					<CardTitle class="text-sm font-medium text-foreground">Models Used</CardTitle>
+					<CardTitle class="text-sm font-medium text-foreground">Models</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<p class="text-2xl font-semibold tabular-nums text-foreground">{modelCount}</p>
-					<p class="text-xs text-muted-foreground">
-						{topModel ? `Top: ${topModel[0]}` : ''}
-					</p>
+					<p class="text-3xl font-bold tabular-nums text-foreground">{modelCount}</p>
+					{#if topModel}
+						<p class="mt-1 text-xs text-muted-foreground">{topModel[0]}</p>
+					{/if}
 				</CardContent>
 			</Card>
 
@@ -78,10 +80,12 @@
 					<CardTitle class="text-sm font-medium text-foreground">Top Key Cost</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<p class="text-2xl font-semibold tabular-nums text-foreground">
-						${topKey ? topKey.cost.toFixed(4) : '0'}
+					<p class="text-3xl font-bold tabular-nums text-foreground">
+						${topKey ? topKey.cost.toFixed(4) : '0.0000'}
 					</p>
-					<p class="text-xs text-muted-foreground">{topKey ? topKey.apiKeyName : ''}</p>
+					{#if topKey}
+						<p class="mt-1 text-xs text-muted-foreground">{topKey.apiKeyName}</p>
+					{/if}
 				</CardContent>
 			</Card>
 		</div>
