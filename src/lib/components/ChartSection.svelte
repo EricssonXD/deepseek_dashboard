@@ -45,7 +45,10 @@
 	const CHART_COLORS = $derived(
 		Array.from({ length: 9 }, (_, i) => {
 			const h = (primaryH + i * 40) % 360;
-			return `oklch(${primaryL.toFixed(2)} ${primaryC.toFixed(2)} ${Math.round(h)})`;
+			// Vary lightness in 3 bands (0.48, 0.56, 0.64) + high chroma for clear distinction
+			const l = 0.48 + (i % 3) * 0.08;
+			const c = 0.20;
+			return `oklch(${l.toFixed(2)} ${c.toFixed(2)} ${Math.round(h)})`;
 		})
 	);
 
