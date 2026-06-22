@@ -26,7 +26,7 @@
 	const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i);
 </script>
 
-<div class="mx-6 mt-4 rounded-lg border border-border bg-card p-4">
+<div class="mx-6 mt-4 rounded-xl border border-border/50 bg-card p-4">
 	<div class="flex flex-wrap items-end gap-3">
 		<div>
 			<label for="fetchMonth" class="mb-1 block text-xs font-medium text-muted-foreground">
@@ -34,7 +34,7 @@
 			</label>
 			<select
 				id="fetchMonth"
-				class="h-9 w-20 appearance-none rounded-lg border border-input bg-background px-3 text-sm text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+				class="h-9 w-20 appearance-none rounded-xl border border-input bg-background px-3 text-sm text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 				value={month}
 				onchange={(e) => onMonthChange(Number(e.currentTarget.value))}
 			>
@@ -50,7 +50,7 @@
 			</label>
 			<select
 				id="fetchYear"
-				class="h-9 w-24 appearance-none rounded-lg border border-input bg-background px-3 text-sm text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+				class="h-9 w-24 appearance-none rounded-xl border border-input bg-background px-3 text-sm text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 				value={year}
 				onchange={(e) => onYearChange(Number(e.currentTarget.value))}
 			>
