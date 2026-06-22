@@ -1,8 +1,6 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
-	import TokenPanel from '$lib/components/TokenPanel.svelte';
-	import FetchPanel from '$lib/components/FetchPanel.svelte';
-	import DropZone from '$lib/components/DropZone.svelte';
+	import ControlBar from '$lib/components/ControlBar.svelte';
 	import SummaryCards from '$lib/components/SummaryCards.svelte';
 	import ChartSection from '$lib/components/ChartSection.svelte';
 	import KeyTable from '$lib/components/KeyTable.svelte';
@@ -179,31 +177,23 @@
 		</div>
 	{/if}
 
-	<TokenPanel {tokenPrefix} {isConnected} {bookmarkletHref} {onTokenPaste} />
-
-	<FetchPanel
+	<ControlBar
+		{tokenPrefix}
+		{isConnected}
+		{bookmarkletHref}
+		{onTokenPaste}
 		month={fetchMonth}
 		year={fetchYear}
-		isDisabled={isFetching || !isConnected}
+		isFetching={isFetching}
 		status={fetchStatus}
 		onMonthChange={(m) => { fetchMonth = m; }}
 		onYearChange={(y) => { fetchYear = y; }}
 		onFetch={fetchFromApi}
 		onRetry={fetchFromApi}
+		{onFiles}
+		hasData={allRows.length > 0}
+		existingZipNames={allRows.length > 0 ? existingZipNames : []}
 	/>
-
-	<DropZone {onFiles} hasData={allRows.length > 0} existingZipNames={allRows.length > 0 ? existingZipNames : []} />
-
-	<div class="px-6 pb-2 pt-2 text-center">
-		<a
-			href="https://platform.deepseek.com/usage"
-			target="_blank"
-			rel="noopener"
-			class="inline-block rounded-xl border border-border/50 px-4 py-1.5 text-sm font-medium text-primary no-underline transition-all hover:border-primary/30 hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-		>
-			Download export from platform.deepseek.com/usage
-		</a>
-	</div>
 
 	{#if allRows.length > 0}
 		<SummaryCards {keyList} {modelTotals} {grandTotal} loading={isLoading} />
