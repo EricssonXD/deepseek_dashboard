@@ -27,17 +27,27 @@
 
 	let dailyTab = $state<'today' | '30d'>('30d');
 
-	const CHART_COLORS = [
-		'var(--color-chart-1)',
-		'var(--color-chart-2)',
-		'var(--color-chart-3)',
-		'var(--color-chart-4)',
-		'var(--color-chart-5)',
-		'var(--color-chart-6)',
-		'var(--color-chart-7)',
-		'var(--color-chart-8)',
-		'var(--color-chart-9)'
-	];
+	// Parse primary color and generate palette by rotating hue 40° per step
+	let primaryH = $state(188);
+	let primaryL = $state(0.52);
+	let primaryC = $state(0.10);
+
+	$effect(() => {
+		const raw = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+		const m = raw.match(/oklch\(([\d.]+)\s+([\d.]+)\s+([\d.]+)/);
+		if (m) {
+			primaryL = parseFloat(m[1]);
+			primaryC = parseFloat(m[2]);
+			primaryH = parseFloat(m[3]);
+		}
+	});
+
+	const CHART_COLORS = $derived(
+		Array.from({ length: 9 }, (_, i) => {
+			const h = (primaryH + i * 40) % 360;
+			return `oklch(${primaryL.toFixed(2)} ${primaryC.toFixed(2)} ${Math.round(h)})`;
+		})
+	);
 
 	// ── Bar ──
 	const topKeys = $derived(keyList.slice(0, 15));
