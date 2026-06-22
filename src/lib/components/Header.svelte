@@ -6,7 +6,7 @@
 
 <header class="flex items-center justify-between gap-3 border-t-2 border-t-primary bg-background px-6 py-5">
 	<div class="flex items-center gap-3">
-		<span class="inline-block size-2 rounded-full bg-primary" aria-hidden="true"></span>
+		<span class="inline-block size-2.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" aria-hidden="true"></span>
 		<h1 class="text-lg font-bold tracking-tight text-foreground">
 			DeepSeek Usage Dashboard
 		</h1>
