@@ -196,13 +196,13 @@
 	/>
 
 	{#if allRows.length > 0}
-		<SummaryCards {keyList} {modelTotals} {grandTotal} loading={isLoading} />
 		<ChartSection {keyList} {modelTotals} {dailyData} {dailyKeys} {todayData} {todayKeys} loading={isLoading} />
+		<SummaryCards {keyList} {modelTotals} {grandTotal} loading={isLoading} />
 		<KeyTable {detailRows} loading={isLoading} />
 	{:else if isFetching}
 		<!-- Fetching in progress — show skeleton -->
-		<SummaryCards keyList={[]} modelTotals={{}} grandTotal={0} loading={true} />
 		<ChartSection keyList={[]} modelTotals={{}} dailyData={[]} dailyKeys={[]} todayData={[]} todayKeys={[]} loading={true} />
+		<SummaryCards keyList={[]} modelTotals={{}} grandTotal={0} loading={true} />
 		<KeyTable detailRows={[]} loading={true} />
 	{:else}
 		<!-- Empty state with structured onboarding -->

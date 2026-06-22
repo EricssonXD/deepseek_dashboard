@@ -85,6 +85,66 @@
 	const activeSeries = $derived(dailyTab === 'today' ? todaySeries : dailySeries);
 </script>
 
+<!-- Daily / Today consumption tabs -->
+{#if loading}
+	<div class="px-6 pt-6 pb-6">
+		<Card.Root>
+			<Card.Header>
+				<div class="mb-1 h-4 w-48 animate-pulse rounded-sm bg-muted"></div>
+				<div class="h-3 w-64 animate-pulse rounded-sm bg-muted"></div>
+			</Card.Header>
+			<Card.Content>
+				<div class="h-[350px] animate-pulse rounded-lg bg-muted"></div>
+			</Card.Content>
+		</Card.Root>
+	</div>
+{:else if (dailyTab === '30d' && dailyData.length > 0) || (dailyTab === 'today' && todayData.length > 0)}
+	<div class="px-6 pt-6 pb-6">
+		<Card.Root>
+			<Card.Header>
+				<div class="flex items-center justify-between">
+					<div>
+						<Card.Title class="text-sm font-semibold text-foreground">Consumption per API Key</Card.Title>
+						<Card.Description>Daily cost across top {dailyKeys.length} keys</Card.Description>
+					</div>
+				</div>
+			</Card.Header>
+			<Card.Content>
+				<Chart.Container config={activeConfig} class="max-h-[350px]">
+					<LineChart
+						points={{ r: 4 }}
+						data={activeData}
+						x="date"
+						xScale={scaleUtc()}
+						axis="x"
+						series={activeSeries}
+						props={{
+							spline: { curve: curveMonotoneX, motion: 'tween', strokeWidth: 2 },
+							highlight: { points: { motion: 'none', r: 6 } },
+							xAxis: {
+								format: dailyTab === 'today'
+									? (v: Date) => `${v.getUTCHours().toString().padStart(2, '0')}:00`
+									: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+							}
+						}}
+					>
+						{#snippet tooltip()}<Chart.Tooltip hideLabel />{/snippet}
+					</LineChart>
+				</Chart.Container>
+			</Card.Content>
+			<Card.Footer>
+				<div class="flex w-full items-start gap-2 text-sm">
+					<div class="grid gap-2">
+						<div class="text-muted-foreground flex items-center gap-2 leading-none">
+							{dailyData.length} day{dailyData.length !== 1 ? 's' : ''} of usage data
+						</div>
+					</div>
+				</div>
+			</Card.Footer>
+		</Card.Root>
+	</div>
+{/if}
+
 <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5 px-6 pb-6">
 	{#if loading}
 		<Card.Root>
@@ -173,63 +233,3 @@
 	</Card.Root>
 {/if}
 </div>
-
-<!-- Daily / Today consumption tabs -->
-{#if loading}
-	<div class="px-6 pb-6">
-		<Card.Root>
-			<Card.Header>
-				<div class="mb-1 h-4 w-48 animate-pulse rounded-sm bg-muted"></div>
-				<div class="h-3 w-64 animate-pulse rounded-sm bg-muted"></div>
-			</Card.Header>
-			<Card.Content>
-				<div class="h-[350px] animate-pulse rounded-lg bg-muted"></div>
-			</Card.Content>
-		</Card.Root>
-	</div>
-{:else if (dailyTab === '30d' && dailyData.length > 0) || (dailyTab === 'today' && todayData.length > 0)}
-	<div class="px-6 pb-6">
-		<Card.Root>
-			<Card.Header>
-				<div class="flex items-center justify-between">
-					<div>
-						<Card.Title class="text-sm font-semibold text-foreground">Consumption per API Key</Card.Title>
-						<Card.Description>Daily cost across top {dailyKeys.length} keys</Card.Description>
-					</div>
-				</div>
-			</Card.Header>
-			<Card.Content>
-				<Chart.Container config={activeConfig} class="max-h-[350px]">
-					<LineChart
-						points={{ r: 4 }}
-						data={activeData}
-						x="date"
-						xScale={scaleUtc()}
-						axis="x"
-						series={activeSeries}
-						props={{
-							spline: { curve: curveMonotoneX, motion: 'tween', strokeWidth: 2 },
-							highlight: { points: { motion: 'none', r: 6 } },
-							xAxis: {
-								format: dailyTab === 'today'
-									? (v: Date) => `${v.getUTCHours().toString().padStart(2, '0')}:00`
-									: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-							}
-						}}
-					>
-						{#snippet tooltip()}<Chart.Tooltip hideLabel />{/snippet}
-					</LineChart>
-				</Chart.Container>
-			</Card.Content>
-			<Card.Footer>
-				<div class="flex w-full items-start gap-2 text-sm">
-					<div class="grid gap-2">
-						<div class="text-muted-foreground flex items-center gap-2 leading-none">
-							{dailyData.length} day{dailyData.length !== 1 ? 's' : ''} of usage data
-						</div>
-					</div>
-				</div>
-			</Card.Footer>
-		</Card.Root>
-	</div>
-{/if}
