@@ -25,7 +25,7 @@
 		loading?: boolean;
 	} = $props();
 
-	let dailyTab = $state<'today' | '30d' | 'cumulative'>('30d');
+	let dailyTab = $state<'30d' | 'cumulative'>('30d');
 
 	// Each color with its own tuned L/C. Hue shifts with --primary.
 	const COLOR_DEFS = [
@@ -58,8 +58,7 @@
 	// Color map: same key → same color across all charts
 	const allKeys = $derived([...new Set([
 		...keyList.map(k => k.apiKeyName || k.apiKeyMasked),
-		...dailyKeys,
-		...todayKeys
+		...dailyKeys
 	])].sort());
 
 	const keyColorMap = $derived(
@@ -107,12 +106,6 @@
 	);
 	const dailySeries = $derived(dailyKeys.map(key => ({ key, label: key, color: keyColor(key) })));
 
-	// ── Today line ──
-	const todayConfig = $derived<Chart.ChartConfig>(
-		Object.fromEntries(todayKeys.map(key => [key, { label: key, color: keyColor(key) }]))
-	);
-	const todaySeries = $derived(todayKeys.map(key => ({ key, label: key, color: keyColor(key) })));
-
 	// ── Cumulative line (running total from daily data) ──
 	const cumulativeData = $derived.by(() => {
 		const running: Record<string, number> = {};
@@ -130,16 +123,10 @@
 	);
 	const cumulativeSeries = $derived(dailyKeys.map(key => ({ key, label: key, color: keyColor(key) })));
 
-	const activeData = $derived(
-		dailyTab === 'today' ? todayData : dailyTab === 'cumulative' ? cumulativeData : dailyData
-	);
-	const activeKeys = $derived(dailyTab === 'today' ? todayKeys : dailyKeys);
-	const activeConfig = $derived(
-		dailyTab === 'today' ? todayConfig : dailyTab === 'cumulative' ? cumulativeConfig : dailyConfig
-	);
-	const activeSeries = $derived(
-		dailyTab === 'today' ? todaySeries : dailyTab === 'cumulative' ? cumulativeSeries : dailySeries
-	);
+	const activeData = $derived(dailyTab === 'cumulative' ? cumulativeData : dailyData);
+	const activeKeys = $derived(dailyKeys);
+	const activeConfig = $derived(dailyTab === 'cumulative' ? cumulativeConfig : dailyConfig);
+	const activeSeries = $derived(dailyTab === 'cumulative' ? cumulativeSeries : dailySeries);
 </script>
 
 <!-- Consumption tabs: 30d / Cumulative / Today -->
@@ -155,7 +142,7 @@
 			</Card.Content>
 		</Card.Root>
 	</div>
-{:else if (dailyTab === '30d' && dailyData.length > 0) || (dailyTab === 'today' && todayData.length > 0) || (dailyTab === 'cumulative' && dailyData.length > 0)}
+{:else if dailyData.length > 0}
 	<div class="px-6 pt-6 pb-6">
 		<Card.Root>
 			<Card.Header>
@@ -165,8 +152,6 @@
 						<Card.Description>
 							{#if dailyTab === 'cumulative'}
 								Cumulative cost across top {dailyKeys.length} keys
-							{:else if dailyTab === 'today'}
-								Todayʼs cost across top {todayKeys.length} keys
 							{:else}
 								Daily cost across top {dailyKeys.length} keys
 							{/if}
@@ -182,10 +167,6 @@
 							class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors {dailyTab === 'cumulative' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}"
 							onclick={() => { dailyTab = 'cumulative'; }}
 						>Cumul.</button>
-						<button
-							class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors {dailyTab === 'today' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}"
-							onclick={() => { dailyTab = 'today'; }}
-						>Today</button>
 					</div>
 				</div>
 			</Card.Header>
@@ -202,9 +183,7 @@
 							spline: { curve: curveMonotoneX, motion: 'tween', strokeWidth: 2 },
 							highlight: { points: { motion: 'none', r: 6 } },
 							xAxis: {
-								format: dailyTab === 'today'
-									? (v: Date) => `${v.getUTCHours().toString().padStart(2, '0')}:00`
-									: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+								format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 							}
 						}}
 					>
