@@ -4,6 +4,8 @@
 	import SummaryCards from '$lib/components/SummaryCards.svelte';
 	import ChartSection from '$lib/components/ChartSection.svelte';
 	import KeyTable from '$lib/components/KeyTable.svelte';
+	import { fade, scale, fly } from 'svelte/transition';
+	import { quartOut } from 'svelte/easing';
 	import { handleFiles, buildDailyUsage, buildKeyStats, buildTodayUsage, parseAndStore } from '$lib/utils/parsing';
 	import { buildBookmarkletCode } from '$lib/utils/bookmarklet';
 	import type { DashboardRow, FetchStatus } from '$lib/types/dashboard';
@@ -154,8 +156,12 @@
 			aria-modal="true"
 			aria-label="Confirm clear all data"
 			onkeydown={(e) => { if (e.key === 'Escape') showResetConfirm = false; }}
+			transition:fade={{ duration: 150 }}
 		>
-			<div class="w-full max-w-sm rounded-xl border border-border/50 bg-card p-6">
+			<div
+				class="w-full max-w-sm rounded-xl border border-border/50 bg-card p-6"
+				transition:scale={{ start: 0.95, duration: 150, easing: quartOut }}
+			>
 				<p class="text-sm text-foreground">
 					Clear all loaded data? This cannot be undone.
 				</p>
@@ -224,7 +230,10 @@
 				</p>
 
 				<div class="grid gap-4 text-left sm:grid-cols-2">
-					<div class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-primary/30">
+					<div
+						class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-primary/30"
+						in:fly={{ y: 8, duration: 250, delay: 0, easing: quartOut }}
+					>
 						<div class="mb-2 text-xs font-medium text-muted-foreground">Option 1</div>
 						<p class="text-sm text-foreground">
 							Drag the <strong class="text-primary">DeepSeek Token</strong> bookmarklet
@@ -235,7 +244,10 @@
 						</p>
 					</div>
 
-					<div class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-primary/30">
+					<div
+						class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-primary/30"
+						in:fly={{ y: 8, duration: 250, delay: 50, easing: quartOut }}
+					>
 						<div class="mb-2 text-xs font-medium text-muted-foreground">Option 2</div>
 						<p class="text-sm text-foreground">
 							Download your usage ZIP from
