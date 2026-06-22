@@ -25,7 +25,6 @@
 		loading?: boolean;
 	} = $props();
 
-	const SHOW_TODAY = false; // CSV lacks time component — disable until hourly data available
 	let dailyTab = $state<'today' | '30d'>('30d');
 
 	const CHART_COLORS = [
@@ -184,28 +183,6 @@
 						<Card.Title class="text-sm font-medium text-foreground">Consumption per API Key</Card.Title>
 						<Card.Description>Daily cost across top {dailyKeys.length} keys</Card.Description>
 					</div>
-					{#if SHOW_TODAY}
-					<div class="flex gap-1 rounded-md border border-border bg-muted p-0.5">
-						<button
-							class="rounded-sm px-3 py-1 text-xs font-medium transition-colors"
-							class:bg-background={dailyTab === 'today'}
-							class:text-foreground={dailyTab === 'today'}
-							class:text-muted-foreground={dailyTab !== 'today'}
-							onclick={() => { dailyTab = 'today'; }}
-						>
-							Today
-						</button>
-						<button
-							class="rounded-sm px-3 py-1 text-xs font-medium transition-colors"
-							class:bg-background={dailyTab === '30d'}
-							class:text-foreground={dailyTab === '30d'}
-							class:text-muted-foreground={dailyTab !== '30d'}
-							onclick={() => { dailyTab = '30d'; }}
-						>
-							Last 30 Days
-						</button>
-					</div>
-					{/if}
 				</div>
 			</Card.Header>
 			<Card.Content>
