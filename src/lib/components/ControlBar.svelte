@@ -86,9 +86,17 @@
 	}
 
 	// ── Derived ──
-	const months = Array.from({ length: 12 }, (_, i) => i + 1);
-	const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i);
 	const fetchDisabled = $derived(isFetching || !isConnected);
+	const monthLabel = $derived(new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }));
+
+	function prevMonth() {
+		if (month === 1) { onMonthChange(12); onYearChange(year - 1); }
+		else { onMonthChange(month - 1); }
+	}
+	function nextMonth() {
+		if (month === 12) { onMonthChange(1); onYearChange(year + 1); }
+		else { onMonthChange(month + 1); }
+	}
 </script>
 
 <div class="mx-6 mt-6 overflow-hidden rounded-xl border border-border/50 bg-card">
@@ -164,32 +172,23 @@
 	<div class="border-t border-border/30 px-5 py-4">
 		<div class="flex flex-col gap-4 sm:flex-row sm:gap-6">
 			<!-- API fetch -->
-			<div class="flex flex-wrap items-end gap-2 sm:flex-1">
-				<div>
-					<label for="cb-month" class="mb-1 block text-[0.7rem] font-medium uppercase tracking-wider text-muted-foreground">Month</label>
-					<select
-						id="cb-month"
-						class="h-8 w-[4.5rem] appearance-none rounded-lg border border-border bg-background px-2 text-sm text-foreground transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-						value={month}
-						onchange={(e) => onMonthChange(Number(e.currentTarget.value))}
+			<div class="flex flex-wrap items-center gap-2 sm:flex-1">
+				<div class="inline-flex items-center rounded-lg border border-border bg-background">
+					<button
+						class="flex size-8 items-center justify-center rounded-l-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring focus-visible:outline-none"
+						onclick={prevMonth}
+						aria-label="Previous month"
 					>
-						{#each months as m}
-							<option value={m}>{String(m).padStart(2, '0')}</option>
-						{/each}
-					</select>
-				</div>
-				<div>
-					<label for="cb-year" class="mb-1 block text-[0.7rem] font-medium uppercase tracking-wider text-muted-foreground">Year</label>
-					<select
-						id="cb-year"
-						class="h-8 w-[5.5rem] appearance-none rounded-lg border border-border bg-background px-2 text-sm text-foreground transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-						value={year}
-						onchange={(e) => onYearChange(Number(e.currentTarget.value))}
+						<svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+					</button>
+					<span class="min-w-[8.5rem] px-3 text-center text-sm font-medium text-foreground tabular-nums">{monthLabel}</span>
+					<button
+						class="flex size-8 items-center justify-center rounded-r-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring focus-visible:outline-none"
+						onclick={nextMonth}
+						aria-label="Next month"
 					>
-						{#each years as y}
-							<option value={y}>{y}</option>
-						{/each}
-					</select>
+						<svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+					</button>
 				</div>
 				<Button size="sm" onclick={onFetch} disabled={fetchDisabled}>
 					{#if isFetching}
