@@ -94,41 +94,68 @@
 <div class="mx-6 mt-6 overflow-hidden rounded-xl border border-border/50 bg-card">
 
 	<!-- ═══ Zone 1: Connection status ═══ -->
-	<div class="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
-		<span
-			class="inline-flex size-2.5 shrink-0 rounded-full ring-2 {isConnected ? 'bg-success ring-success/30' : 'bg-destructive ring-destructive/30'}"
-			aria-hidden="true"
-		></span>
+	<div class="px-5 py-4">
+		<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+			<span
+				class="inline-flex size-2.5 shrink-0 rounded-full ring-2 {isConnected ? 'bg-success ring-success/30' : 'bg-destructive ring-destructive/30'}"
+				aria-hidden="true"
+			></span>
 
-		{#if isConnected && !showEdit}
-			<span class="text-sm font-semibold text-foreground">Connected</span>
-			<span class="font-mono text-xs text-muted-foreground">{tokenPrefix}</span>
-			<button
-				class="text-xs font-medium text-primary hover:underline"
-				onclick={() => { showEdit = true; }}
-			>change</button>
+			{#if isConnected && !showEdit}
+				<span class="text-sm font-semibold text-foreground">Connected</span>
+				<span class="font-mono text-xs text-muted-foreground">{tokenPrefix}</span>
+				<button
+					class="text-xs font-medium text-primary hover:underline"
+					onclick={() => { showEdit = true; }}
+				>change</button>
 
-		{:else}
-			<span class="text-sm font-semibold {isConnected ? 'text-foreground' : 'text-muted-foreground'}">
-				{isConnected ? 'Change token' : 'No token'}
-			</span>
-			<div class="flex w-full gap-2 sm:w-auto sm:min-w-[360px]">
-				<input
-					type="text"
-					bind:value={manualToken}
-					onkeydown={handleTokenKeydown}
-					placeholder="sk-..."
-					class="h-8 flex-1 rounded-lg border border-input bg-background px-3 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-					autocomplete="off"
-					spellcheck="false"
-				/>
-				<Button size="sm" onclick={handleTokenSubmit} disabled={!manualToken.trim()}>Connect</Button>
-				{#if isConnected}
-					<button
-						class="shrink-0 text-xs text-muted-foreground hover:text-foreground"
-						onclick={() => { showEdit = false; manualToken = ''; }}
-					>cancel</button>
-				{/if}
+			{:else}
+				<span class="text-sm font-semibold {isConnected ? 'text-foreground' : 'text-muted-foreground'}">
+					{isConnected ? 'Change token' : 'No token'}
+				</span>
+				<div class="flex w-full gap-2 sm:w-auto sm:min-w-[360px]">
+					<input
+						type="text"
+						bind:value={manualToken}
+						onkeydown={handleTokenKeydown}
+						placeholder="sk-..."
+						class="h-8 flex-1 rounded-lg border border-input bg-background px-3 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+						autocomplete="off"
+						spellcheck="false"
+					/>
+					<Button size="sm" onclick={handleTokenSubmit} disabled={!manualToken.trim()}>Connect</Button>
+					{#if isConnected}
+						<button
+							class="shrink-0 text-xs text-muted-foreground hover:text-foreground"
+							onclick={() => { showEdit = false; manualToken = ''; }}
+						>cancel</button>
+					{/if}
+				</div>
+			{/if}
+		</div>
+
+		<!-- Bookmarklet callout — prominently shown when not connected -->
+		{#if bookmarkletHref && (!isConnected || showEdit)}
+			<div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+				<a
+					href={bookmarkletHref}
+					class="inline-flex cursor-grab select-none items-center gap-2.5 self-start rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 px-4 py-2.5 text-sm font-semibold text-primary no-underline transition-all hover:border-primary hover:bg-primary/10 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+					draggable="true"
+					title="Drag to bookmarks bar. Visit platform.deepseek.com and click it to capture your token."
+				>
+					<svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+					</svg>
+					DeepSeek Token
+				</a>
+				<div>
+					<p class="text-sm font-medium text-foreground">
+						Drag this to your bookmarks bar
+					</p>
+					<p class="text-xs text-muted-foreground">
+						Then visit platform.deepseek.com, click the bookmark, and paste the token here.
+					</p>
+				</div>
 			</div>
 		{/if}
 	</div>
@@ -216,12 +243,12 @@
 
 	<!-- ═══ Zone 3: Utility links ═══ -->
 	<div class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border/30 px-5 py-2">
-		{#if bookmarkletHref}
+		{#if bookmarkletHref && isConnected && !showEdit}
 			<a
 				href={bookmarkletHref}
 				class="inline-flex cursor-grab items-center gap-1 text-[0.7rem] font-medium text-muted-foreground no-underline transition-colors hover:text-foreground"
 				draggable="true"
-				title="Drag to bookmarks bar. Visit platform.deepseek.com and click it to capture your token."
+				title="Drag to bookmarks bar to refresh your token."
 			>
 				<svg class="size-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
@@ -229,8 +256,8 @@
 				DeepSeek Token
 			</a>
 			<span class="hidden text-[0.7rem] text-muted-foreground/60 sm:inline">Drag to bookmarks bar</span>
+			<span class="text-[0.7rem] text-muted-foreground/60">·</span>
 		{/if}
-		<span class="text-[0.7rem] text-muted-foreground/60">·</span>
 		<a
 			href="https://platform.deepseek.com/usage"
 			target="_blank"
