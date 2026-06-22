@@ -138,7 +138,7 @@
 	});
 </script>
 
-<div class="mx-6 mt-6 overflow-hidden rounded-xl border border-border/50 bg-card">
+<div class="mx-6 mt-6 rounded-xl border border-border/50 bg-card">
 
 	<!-- ═══ Zone 1: Connection status ═══ -->
 	<div class="px-5 py-4">
