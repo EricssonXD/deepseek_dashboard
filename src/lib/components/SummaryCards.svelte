@@ -15,6 +15,9 @@
 	} = $props();
 
 	const topKey = $derived(keyList[0]);
+	const modelEntries = $derived(Object.entries(modelTotals).sort((a, b) => b[1] - a[1]));
+	const topModel = $derived(modelEntries[0]);
+	const modelCount = $derived(Object.keys(modelTotals).length);
 </script>
 
 <div class="px-6 pt-6">
@@ -38,11 +41,20 @@
 			<CardHeader class="pb-2">
 				<CardTitle class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Cost</CardTitle>
 			</CardHeader>
-			<CardContent class="flex items-baseline gap-3">
-				<span class="text-5xl font-black tabular-nums tracking-tight text-foreground">
-					${grandTotal.toFixed(4)}
-				</span>
-				<span class="text-base font-medium text-muted-foreground">USD</span>
+			<CardContent>
+				<div class="flex items-baseline gap-3">
+					<span class="text-5xl font-black tabular-nums tracking-tight text-foreground">
+						${grandTotal.toFixed(4)}
+					</span>
+					<span class="text-base font-medium text-muted-foreground">USD</span>
+				</div>
+				<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+					<span><span class="font-semibold tabular-nums text-foreground">{keyList.length}</span> key{keyList.length !== 1 ? 's' : ''}</span>
+					<span><span class="font-semibold tabular-nums text-foreground">{modelCount}</span> model{modelCount !== 1 ? 's' : ''}</span>
+					{#if topModel}
+						<span>top model <span class="font-medium text-foreground">{topModel[0]}</span></span>
+					{/if}
+				</div>
 			</CardContent>
 		</Card>
 
