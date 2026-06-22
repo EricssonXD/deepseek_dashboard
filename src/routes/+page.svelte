@@ -206,10 +206,10 @@
 		<KeyTable detailRows={[]} loading={true} />
 	{:else}
 		<!-- Empty state with structured onboarding -->
-		<div class="mx-6 mt-10 rounded-xl border border-border bg-card p-10">
+		<div class="mx-6 mt-10 rounded-xl border border-primary/10 bg-card p-10">
 			<div class="mx-auto max-w-lg text-center">
 				<svg
-					class="mx-auto mb-4 size-12 text-muted-foreground"
+					class="mx-auto mb-4 size-12 text-primary/25"
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none" viewBox="0 0 24 24"
 					stroke-width="1"
@@ -224,7 +224,7 @@
 				</p>
 
 				<div class="grid gap-4 text-left sm:grid-cols-2">
-					<div class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-border/60">
+					<div class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-primary/30">
 						<div class="mb-2 text-xs font-medium text-muted-foreground">Option 1</div>
 						<p class="text-sm text-foreground">
 							Drag the <strong class="text-primary">DeepSeek Token</strong> bookmarklet
@@ -235,7 +235,7 @@
 						</p>
 					</div>
 
-					<div class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-border/60">
+					<div class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-primary/30">
 						<div class="mb-2 text-xs font-medium text-muted-foreground">Option 2</div>
 						<p class="text-sm text-foreground">
 							Download your usage ZIP from

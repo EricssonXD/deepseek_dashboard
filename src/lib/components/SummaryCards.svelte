@@ -33,7 +33,7 @@
 		</Card>
 	{:else}
 		<!-- Hero: Total Cost + Top Key Cost side by side -->
-		<Card class="mb-4 border-primary/30 bg-primary/5">
+		<Card class="mb-4 border-primary/40 bg-primary/6">
 			<CardHeader class="pb-2">
 				<CardTitle class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Overview</CardTitle>
 			</CardHeader>

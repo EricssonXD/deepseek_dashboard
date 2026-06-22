@@ -208,7 +208,7 @@
 	</div>
 
 	<!-- ═══ Zone 2: Data inputs ═══ -->
-	<div class="border-t border-border/30 px-5 py-4">
+	<div class="border-t border-primary/10 px-5 py-4">
 		<div class="flex flex-col gap-4 sm:flex-row sm:gap-6">
 			<!-- API fetch -->
 			<div class="flex flex-wrap items-center gap-2 sm:flex-1">
@@ -302,11 +302,11 @@
 			</div>
 
 			<!-- Divider -->
-			<div class="hidden border-l border-border/30 sm:block" aria-hidden="true"></div>
+			<div class="hidden border-l border-primary/10 sm:block" aria-hidden="true"></div>
 
 			<!-- File drop -->
 			<div
-				class="flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-border/50 bg-background px-4 py-3 text-center transition-all hover:border-primary/40 hover:bg-muted/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:flex-1 {dragging ? 'border-primary bg-primary/5' : ''}"
+				class="flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-primary/15 bg-background px-4 py-3 text-center transition-all hover:border-primary/50 hover:bg-primary/3 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:flex-1 {dragging ? 'border-primary bg-primary/5' : ''}"
 				role="button"
 				tabindex="0"
 				onclick={() => fileInput?.click()}

@@ -158,7 +158,7 @@
 						</Card.Description>
 					</div>
 					<!-- Tab buttons -->
-					<div class="flex rounded-lg border border-border bg-background p-0.5">
+					<div class="flex rounded-lg border border-primary/10 bg-background p-0.5">
 						<button
 							class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors {dailyTab === '30d' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}"
 							onclick={() => { dailyTab = '30d'; }}
