@@ -166,7 +166,7 @@
 						bind:value={manualToken}
 						onkeydown={handleTokenKeydown}
 						placeholder="sk-..."
-						class="h-8 flex-1 rounded-lg border border-border bg-background px-3 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+						class="h-8 flex-1 rounded-lg border-2 border-muted-foreground/20 bg-background px-3 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
 						autocomplete="off"
 						spellcheck="false"
 					/>
