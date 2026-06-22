@@ -13,7 +13,8 @@
 		dailyData = [],
 		dailyKeys = [],
 		todayData = [],
-		todayKeys = []
+		todayKeys = [],
+		loading = false
 	}: {
 		keyList: KeySummary[];
 		modelTotals: Record<string, number>;
@@ -21,6 +22,7 @@
 		dailyKeys: string[];
 		todayData: DailyKeyUsage[];
 		todayKeys: string[];
+		loading?: boolean;
 	} = $props();
 
 	const SHOW_TODAY = false; // CSV lacks time component — disable until hourly data available
@@ -72,8 +74,27 @@
 </script>
 
 <div class="grid grid-cols-[repeat(auto-fit,minmax(400px,1fr))] gap-4 px-6 pb-6">
-	<!-- Bar: Cost per API Key -->
-	<Card.Root>
+	{#if loading}
+		<Card.Root>
+			<Card.Header>
+				<div class="mb-1 h-4 w-32 animate-pulse rounded-sm bg-muted"></div>
+				<div class="h-3 w-48 animate-pulse rounded-sm bg-muted"></div>
+			</Card.Header>
+			<Card.Content>
+				<div class="h-64 animate-pulse rounded-lg bg-muted"></div>
+			</Card.Content>
+		</Card.Root>
+		<Card.Root class="flex flex-col">
+			<Card.Header class="items-center">
+				<div class="mb-1 h-4 w-28 animate-pulse rounded-sm bg-muted"></div>
+				<div class="h-3 w-40 animate-pulse rounded-sm bg-muted"></div>
+			</Card.Header>
+			<Card.Content class="flex-1">
+				<div class="mx-auto aspect-square h-64 animate-pulse rounded-full bg-muted"></div>
+			</Card.Content>
+		</Card.Root>
+	{:else}
+		<Card.Root>
 		<Card.Header>
 			<Card.Title class="text-sm text-foreground">Cost per API Key</Card.Title>
 			<Card.Description>Top {barData.length} keys by spend</Card.Description>
@@ -138,10 +159,23 @@
 			<div class="text-muted-foreground leading-none">Total cost across {pieData.length} model{pieData.length !== 1 ? 's' : ''}</div>
 		</Card.Footer>
 	</Card.Root>
+{/if}
 </div>
 
 <!-- Daily / Today consumption tabs -->
-{#if (dailyTab === '30d' && dailyData.length > 0) || (dailyTab === 'today' && todayData.length > 0)}
+{#if loading}
+	<div class="px-6 pb-6">
+		<Card.Root>
+			<Card.Header>
+				<div class="mb-1 h-4 w-48 animate-pulse rounded-sm bg-muted"></div>
+				<div class="h-3 w-64 animate-pulse rounded-sm bg-muted"></div>
+			</Card.Header>
+			<Card.Content>
+				<div class="h-[350px] animate-pulse rounded-lg bg-muted"></div>
+			</Card.Content>
+		</Card.Root>
+	</div>
+{:else if (dailyTab === '30d' && dailyData.length > 0) || (dailyTab === 'today' && todayData.length > 0)}
 	<div class="px-6 pb-6">
 		<Card.Root>
 			<Card.Header>

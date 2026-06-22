@@ -9,7 +9,8 @@
 		status = { message: '', type: '' },
 		onMonthChange,
 		onYearChange,
-		onFetch
+		onFetch,
+		onRetry
 	}: {
 		month: number;
 		year: number;
@@ -18,10 +19,11 @@
 		onMonthChange: (m: number) => void;
 		onYearChange: (y: number) => void;
 		onFetch: () => void;
+		onRetry?: () => void;
 	} = $props();
 
 	const months = Array.from({ length: 12 }, (_, i) => i + 1);
-	const years = [2025, 2026, 2027];
+	const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i);
 </script>
 
 <div class="mx-6 mt-4 rounded-lg border border-border bg-card p-4">
@@ -29,7 +31,7 @@
 		<div>
 			<label
 				for="fetchMonth"
-				class="mb-1 block text-xs uppercase tracking-wide text-muted-foreground"
+				class="mb-1 block text-xs font-medium text-muted-foreground"
 			>
 				Month
 			</label>
@@ -48,7 +50,7 @@
 		<div>
 			<label
 				for="fetchYear"
-				class="mb-1 block text-xs uppercase tracking-wide text-muted-foreground"
+				class="mb-1 block text-xs font-medium text-muted-foreground"
 			>
 				Year
 			</label>
@@ -70,13 +72,23 @@
 	</div>
 
 	{#if status.message}
-		<p
-			class="mt-2 text-xs"
-			class:text-success={status.type === 'success'}
-			class:text-destructive={status.type === 'error'}
-			class:text-muted-foreground={status.type !== 'success' && status.type !== 'error'}
-		>
-			{status.message}
-		</p>
+		<div class="mt-2 flex items-center gap-3">
+			<p
+				class="text-xs"
+				class:text-success={status.type === 'success'}
+				class:text-destructive={status.type === 'error'}
+				class:text-muted-foreground={status.type !== 'success' && status.type !== 'error'}
+			>
+				{status.message}
+			</p>
+			{#if status.type === 'error' && onRetry}
+				<button
+					class="text-xs font-medium text-primary underline hover:no-underline"
+					onclick={onRetry}
+				>
+					Retry
+				</button>
+			{/if}
+		</div>
 	{/if}
 </div>

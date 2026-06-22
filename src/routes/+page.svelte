@@ -17,11 +17,15 @@
 	let fetchMonth = $state(new Date().getMonth() + 1);
 	let fetchYear = $state(new Date().getFullYear());
 	let isFetching = $state(false);
+	let hasLoadedOnce = $state(false);
+	let showResetConfirm = $state(false);
 	let fetchStatus: FetchStatus = $state({ message: '', type: '' });
 
 	// ── Derived ──
 	const isConnected = $derived(token.length > 0);
+	const isLoading = $derived(isFetching && !hasLoadedOnce);
 	const zipCount = $derived([...new Set(allRows.map((r) => r.zipName))].length);
+	const existingZipNames = $derived([...new Set(allRows.map((r) => r.zipName))]);
 	const { keyList, modelTotals, grandTotal } = $derived(buildKeyStats(allRows));
 	const { dailyData, dailyKeys } = $derived(buildDailyUsage(allRows));
 	const { todayData, todayKeys } = $derived(buildTodayUsage(allRows));
@@ -72,12 +76,19 @@
 	async function onFiles(files: FileList) {
 		const newRows = await handleFiles(files);
 		allRows = [...allRows, ...newRows];
+		hasLoadedOnce = true;
 		fetchStatus = { message: '', type: '' };
+	}
+
+	function confirmReset() {
+		showResetConfirm = true;
 	}
 
 	function resetAll() {
 		allRows = [];
+		hasLoadedOnce = false;
 		fetchStatus = { message: '', type: '' };
+		showResetConfirm = false;
 	}
 
 	function onTokenPaste(t: string) {
@@ -113,6 +124,7 @@
 			}
 
 			allRows = newRows;
+			hasLoadedOnce = true;
 			fetchStatus = {
 				message: `Loaded ${fetchYear}-${String(fetchMonth).padStart(2, '0')} data from API.`,
 				type: 'success'
@@ -133,7 +145,39 @@
 </svelte:head>
 
 <div class="min-h-screen bg-background text-foreground">
-	<Header {zipCount} onClear={resetAll} />
+	<Header {zipCount} onClear={confirmReset} />
+
+	<!-- Reset confirmation dialog -->
+	{#if showResetConfirm}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+			role="dialog"
+			tabindex="-1"
+			aria-modal="true"
+			aria-label="Confirm clear all data"
+			onkeydown={(e) => { if (e.key === 'Escape') showResetConfirm = false; }}
+		>
+			<div class="w-full max-w-sm rounded-lg border border-border bg-card p-6 shadow-lg">
+				<p class="text-sm text-foreground">
+					Clear all loaded data? This cannot be undone.
+				</p>
+				<div class="mt-4 flex justify-end gap-3">
+					<button
+						class="rounded-md border border-border px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
+						onclick={() => { showResetConfirm = false; }}
+					>
+						Cancel
+					</button>
+					<button
+						class="rounded-md bg-destructive px-3 py-1.5 text-sm text-destructive-foreground transition-colors hover:bg-destructive/80"
+						onclick={resetAll}
+					>
+						Clear All
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	<TokenPanel {tokenPrefix} {isConnected} {bookmarkletHref} {onTokenPaste} />
 
@@ -142,16 +186,13 @@
 		year={fetchYear}
 		isDisabled={isFetching || !isConnected}
 		status={fetchStatus}
-		onMonthChange={(m) => {
-			fetchMonth = m;
-		}}
-		onYearChange={(y) => {
-			fetchYear = y;
-		}}
+		onMonthChange={(m) => { fetchMonth = m; }}
+		onYearChange={(y) => { fetchYear = y; }}
 		onFetch={fetchFromApi}
+		onRetry={fetchFromApi}
 	/>
 
-	<DropZone {onFiles} hasData={allRows.length > 0} />
+	<DropZone {onFiles} hasData={allRows.length > 0} existingZipNames={allRows.length > 0 ? existingZipNames : []} />
 
 	<div class="px-6 pb-2 pt-2 text-center">
 		<a
@@ -165,13 +206,65 @@
 	</div>
 
 	{#if allRows.length > 0}
-		<SummaryCards {keyList} {modelTotals} {grandTotal} />
-		<ChartSection {keyList} {modelTotals} {dailyData} {dailyKeys} {todayData} {todayKeys} />
-		<KeyTable {detailRows} />
+		<SummaryCards {keyList} {modelTotals} {grandTotal} loading={isLoading} />
+		<ChartSection {keyList} {modelTotals} {dailyData} {dailyKeys} {todayData} {todayKeys} loading={isLoading} />
+		<KeyTable {detailRows} loading={isLoading} />
+	{:else if isFetching}
+		<!-- Fetching in progress — show skeleton -->
+		<SummaryCards keyList={[]} modelTotals={{}} grandTotal={0} loading={true} />
+		<ChartSection keyList={[]} modelTotals={{}} dailyData={[]} dailyKeys={[]} todayData={[]} todayKeys={[]} loading={true} />
+		<KeyTable detailRows={[]} loading={true} />
 	{:else}
-		<div class="py-20 text-center text-muted-foreground/50">
-			<div class="text-6xl">📊</div>
-			<p class="mt-3">Upload a zip file to see usage data</p>
+		<!-- Empty state with structured onboarding -->
+		<div class="mx-6 mt-10 rounded-lg border border-border bg-card p-10">
+			<div class="mx-auto max-w-lg text-center">
+				<svg
+					class="mx-auto mb-4 size-12 text-muted-foreground"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none" viewBox="0 0 24 24"
+					stroke-width="1"
+					stroke="currentColor"
+					aria-hidden="true"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+				</svg>
+				<h2 class="mb-2 text-lg font-semibold text-foreground">No usage data yet</h2>
+				<p class="mb-8 text-sm text-muted-foreground">
+					Get started in two ways:
+				</p>
+
+				<div class="grid gap-4 text-left sm:grid-cols-2">
+					<div class="rounded-md border border-border bg-background p-4">
+						<div class="mb-2 text-xs font-medium text-muted-foreground">Option 1</div>
+						<p class="text-sm text-foreground">
+							Drag the <strong class="text-primary">DeepSeek Token</strong> bookmarklet
+							to your bookmarks bar, then click it on the DeepSeek usage page.
+						</p>
+						<p class="mt-1 text-xs text-muted-foreground">
+							Token connects automatically — no paste needed.
+						</p>
+					</div>
+
+					<div class="rounded-md border border-border bg-background p-4">
+						<div class="mb-2 text-xs font-medium text-muted-foreground">Option 2</div>
+						<p class="text-sm text-foreground">
+							Download your usage ZIP from
+							<a
+								href="https://platform.deepseek.com/usage"
+								target="_blank"
+								rel="noopener"
+								class="text-primary underline hover:no-underline"
+							>
+								platform.deepseek.com/usage
+							</a>
+							and drop it below.
+						</p>
+						<p class="mt-1 text-xs text-muted-foreground">
+							Or click the upload area to browse files.
+						</p>
+					</div>
+				</div>
+			</div>
 		</div>
 	{/if}
 </div>
