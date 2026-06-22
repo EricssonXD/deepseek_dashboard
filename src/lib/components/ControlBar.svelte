@@ -119,7 +119,7 @@
 						bind:value={manualToken}
 						onkeydown={handleTokenKeydown}
 						placeholder="sk-..."
-						class="h-8 flex-1 rounded-lg border border-input bg-background px-3 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+						class="h-8 flex-1 rounded-lg border border-border bg-background px-3 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
 						autocomplete="off"
 						spellcheck="false"
 					/>
@@ -169,7 +169,7 @@
 					<label for="cb-month" class="mb-1 block text-[0.7rem] font-medium uppercase tracking-wider text-muted-foreground">Month</label>
 					<select
 						id="cb-month"
-						class="h-8 w-[4.5rem] appearance-none rounded-lg border border-input bg-background px-2 text-sm text-foreground transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+						class="h-8 w-[4.5rem] appearance-none rounded-lg border border-border bg-background px-2 text-sm text-foreground transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
 						value={month}
 						onchange={(e) => onMonthChange(Number(e.currentTarget.value))}
 					>
@@ -182,7 +182,7 @@
 					<label for="cb-year" class="mb-1 block text-[0.7rem] font-medium uppercase tracking-wider text-muted-foreground">Year</label>
 					<select
 						id="cb-year"
-						class="h-8 w-[5.5rem] appearance-none rounded-lg border border-input bg-background px-2 text-sm text-foreground transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+						class="h-8 w-[5.5rem] appearance-none rounded-lg border border-border bg-background px-2 text-sm text-foreground transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
 						value={year}
 						onchange={(e) => onYearChange(Number(e.currentTarget.value))}
 					>
