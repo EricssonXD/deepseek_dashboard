@@ -70,11 +70,27 @@
 		return keyColorMap[key] ?? CHART_COLORS[0];
 	}
 
-	// ── Bar ──
+	// ── Bar: multi-series for per-key coloring ──
 	const topKeys = $derived(keyList.slice(0, 15));
-	const barData = $derived(topKeys.map(k => ({ name: k.apiKeyName || k.apiKeyMasked, cost: k.cost, color: keyColor(k.apiKeyName || k.apiKeyMasked) })));
-	const barConfig = $derived<Chart.ChartConfig>({ cost: { label: 'Cost (USD)', color: CHART_COLORS[0] } });
-	const totalBarCost = $derived(barData.reduce((s, d) => s + d.cost, 0));
+	const barSeries = $derived(
+		topKeys.map(k => ({
+			key: k.apiKeyName || k.apiKeyMasked,
+			label: k.apiKeyName || k.apiKeyMasked,
+			color: keyColor(k.apiKeyName || k.apiKeyMasked)
+		}))
+	);
+	const barData = $derived(
+		topKeys.map(k => {
+			const row: Record<string, string | number> = { name: k.apiKeyName || k.apiKeyMasked };
+			for (const o of topKeys) row[o.apiKeyName || o.apiKeyMasked] = 0;
+			row[k.apiKeyName || k.apiKeyMasked] = k.cost;
+			return row;
+		})
+	);
+	const barConfig = $derived<Chart.ChartConfig>(
+		Object.fromEntries(barSeries.map(s => [s.key, { label: s.label, color: s.color }]))
+	);
+	const totalBarCost = $derived(topKeys.reduce((s, k) => s + k.cost, 0));
 
 	// ── Pie ──
 	const modelEntries = $derived(Object.entries(modelTotals).sort((a, b) => b[1] - a[1]));
@@ -196,9 +212,8 @@
 						data={barData}
 						xScale={scaleBand().padding(0.25)}
 						x="name"
-						c="color"
 						axis="x"
-						series={[{ key: 'cost', label: barConfig.cost.label, color: barConfig.cost.color }]}
+						series={barSeries}
 						props={{
 							bars: { stroke: 'none', rounded: 'all', radius: 8, motion: { type: 'tween', duration: 500, easing: cubicInOut } },
 							highlight: { area: { fill: 'none' } },
