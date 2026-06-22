@@ -55,9 +55,24 @@
 		})
 	);
 
+	// Color map: same key → same color across all charts
+	const allKeys = $derived([...new Set([
+		...keyList.map(k => k.apiKeyName || k.apiKeyMasked),
+		...dailyKeys,
+		...todayKeys
+	])].sort());
+
+	const keyColorMap = $derived(
+		Object.fromEntries(allKeys.map((k, i) => [k, CHART_COLORS[i % CHART_COLORS.length]]))
+	);
+
+	function keyColor(key: string) {
+		return keyColorMap[key] ?? CHART_COLORS[0];
+	}
+
 	// ── Bar ──
 	const topKeys = $derived(keyList.slice(0, 15));
-	const barData = $derived(topKeys.map((k, i) => ({ name: k.apiKeyName || k.apiKeyMasked, cost: k.cost, color: CHART_COLORS[i % CHART_COLORS.length] })));
+	const barData = $derived(topKeys.map(k => ({ name: k.apiKeyName || k.apiKeyMasked, cost: k.cost, color: keyColor(k.apiKeyName || k.apiKeyMasked) })));
 	const barConfig = $derived<Chart.ChartConfig>({ cost: { label: 'Cost (USD)', color: CHART_COLORS[0] } });
 	const totalBarCost = $derived(barData.reduce((s, d) => s + d.cost, 0));
 
@@ -72,15 +87,15 @@
 
 	// ── 30-day line ──
 	const dailyConfig = $derived<Chart.ChartConfig>(
-		Object.fromEntries(dailyKeys.map((key, i) => [key, { label: key, color: CHART_COLORS[i % CHART_COLORS.length] }]))
+		Object.fromEntries(dailyKeys.map(key => [key, { label: key, color: keyColor(key) }]))
 	);
-	const dailySeries = $derived(dailyKeys.map((key, i) => ({ key, label: key, color: CHART_COLORS[i % CHART_COLORS.length] })));
+	const dailySeries = $derived(dailyKeys.map(key => ({ key, label: key, color: keyColor(key) })));
 
 	// ── Today line ──
 	const todayConfig = $derived<Chart.ChartConfig>(
-		Object.fromEntries(todayKeys.map((key, i) => [key, { label: key, color: CHART_COLORS[i % CHART_COLORS.length] }]))
+		Object.fromEntries(todayKeys.map(key => [key, { label: key, color: keyColor(key) }]))
 	);
-	const todaySeries = $derived(todayKeys.map((key, i) => ({ key, label: key, color: CHART_COLORS[i % CHART_COLORS.length] })));
+	const todaySeries = $derived(todayKeys.map(key => ({ key, label: key, color: keyColor(key) })));
 
 	const activeData = $derived(dailyTab === 'today' ? todayData : dailyData);
 	const activeKeys = $derived(dailyTab === 'today' ? todayKeys : dailyKeys);
