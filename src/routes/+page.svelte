@@ -163,13 +163,13 @@
 				</p>
 				<div class="mt-4 flex justify-end gap-3">
 					<button
-						class="rounded-lg border border-border/60 px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-muted"
+						class="rounded-xl border border-border/60 px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-muted"
 						onclick={() => { showResetConfirm = false; }}
 					>
 						Cancel
 					</button>
 					<button
-						class="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-all hover:bg-destructive/80"
+						class="rounded-xl bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-all hover:bg-destructive/80"
 						onclick={resetAll}
 					>
 						Clear All
@@ -199,7 +199,7 @@
 			href="https://platform.deepseek.com/usage"
 			target="_blank"
 			rel="noopener"
-			class="inline-block rounded-lg border border-border/50 px-4 py-1.5 text-sm font-medium text-primary no-underline transition-all hover:border-primary/30 hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+			class="inline-block rounded-xl border border-border/50 px-4 py-1.5 text-sm font-medium text-primary no-underline transition-all hover:border-primary/30 hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 		>
 			Download export from platform.deepseek.com/usage
 		</a>
@@ -216,7 +216,7 @@
 		<KeyTable detailRows={[]} loading={true} />
 	{:else}
 		<!-- Empty state with structured onboarding -->
-		<div class="mx-6 mt-10 rounded-lg border border-border bg-card p-10">
+		<div class="mx-6 mt-10 rounded-xl border border-border bg-card p-10">
 			<div class="mx-auto max-w-lg text-center">
 				<svg
 					class="mx-auto mb-4 size-12 text-muted-foreground"
@@ -228,13 +228,13 @@
 				>
 					<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
 				</svg>
-				<h2 class="mb-2 text-xl font-semibold tracking-tight text-foreground">No usage data yet</h2>
+				<h2 class="mb-2 text-xl font-bold tracking-tight text-foreground">No usage data yet</h2>
 				<p class="mb-8 text-sm text-muted-foreground">
 					Get started in two ways:
 				</p>
 
 				<div class="grid gap-4 text-left sm:grid-cols-2">
-					<div class="rounded-lg border border-border/40 bg-background p-4 transition-colors hover:border-border/60">
+					<div class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-border/60">
 						<div class="mb-2 text-xs font-medium text-muted-foreground">Option 1</div>
 						<p class="text-sm text-foreground">
 							Drag the <strong class="text-primary">DeepSeek Token</strong> bookmarklet
@@ -245,7 +245,7 @@
 						</p>
 					</div>
 
-					<div class="rounded-lg border border-border/40 bg-background p-4 transition-colors hover:border-border/60">
+					<div class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-border/60">
 						<div class="mb-2 text-xs font-medium text-muted-foreground">Option 2</div>
 						<p class="text-sm text-foreground">
 							Download your usage ZIP from
