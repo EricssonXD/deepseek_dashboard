@@ -25,7 +25,7 @@
 		loading?: boolean;
 	} = $props();
 
-	let dailyTab = $state<'today' | '30d'>('30d');
+	let dailyTab = $state<'today' | '30d' | 'cumulative'>('30d');
 
 	// Each color with its own tuned L/C. Hue shifts with --primary.
 	const COLOR_DEFS = [
@@ -113,13 +113,36 @@
 	);
 	const todaySeries = $derived(todayKeys.map(key => ({ key, label: key, color: keyColor(key) })));
 
-	const activeData = $derived(dailyTab === 'today' ? todayData : dailyData);
+	// ── Cumulative line (running total from daily data) ──
+	const cumulativeData = $derived.by(() => {
+		const running: Record<string, number> = {};
+		return dailyData.map(d => {
+			const row: DailyKeyUsage = { date: d.date };
+			for (const key of dailyKeys) {
+				running[key] = (running[key] || 0) + (d[key] || 0);
+				row[key] = running[key];
+			}
+			return row;
+		});
+	});
+	const cumulativeConfig = $derived<Chart.ChartConfig>(
+		Object.fromEntries(dailyKeys.map(key => [key, { label: key, color: keyColor(key) }]))
+	);
+	const cumulativeSeries = $derived(dailyKeys.map(key => ({ key, label: key, color: keyColor(key) })));
+
+	const activeData = $derived(
+		dailyTab === 'today' ? todayData : dailyTab === 'cumulative' ? cumulativeData : dailyData
+	);
 	const activeKeys = $derived(dailyTab === 'today' ? todayKeys : dailyKeys);
-	const activeConfig = $derived(dailyTab === 'today' ? todayConfig : dailyConfig);
-	const activeSeries = $derived(dailyTab === 'today' ? todaySeries : dailySeries);
+	const activeConfig = $derived(
+		dailyTab === 'today' ? todayConfig : dailyTab === 'cumulative' ? cumulativeConfig : dailyConfig
+	);
+	const activeSeries = $derived(
+		dailyTab === 'today' ? todaySeries : dailyTab === 'cumulative' ? cumulativeSeries : dailySeries
+	);
 </script>
 
-<!-- Daily / Today consumption tabs -->
+<!-- Consumption tabs: 30d / Cumulative / Today -->
 {#if loading}
 	<div class="px-6 pt-6 pb-6">
 		<Card.Root>
@@ -132,14 +155,37 @@
 			</Card.Content>
 		</Card.Root>
 	</div>
-{:else if (dailyTab === '30d' && dailyData.length > 0) || (dailyTab === 'today' && todayData.length > 0)}
+{:else if (dailyTab === '30d' && dailyData.length > 0) || (dailyTab === 'today' && todayData.length > 0) || (dailyTab === 'cumulative' && dailyData.length > 0)}
 	<div class="px-6 pt-6 pb-6">
 		<Card.Root>
 			<Card.Header>
 				<div class="flex items-center justify-between">
 					<div>
 						<Card.Title class="text-sm font-semibold text-foreground">Consumption per API Key</Card.Title>
-						<Card.Description>Daily cost across top {dailyKeys.length} keys</Card.Description>
+						<Card.Description>
+							{#if dailyTab === 'cumulative'}
+								Cumulative cost across top {dailyKeys.length} keys
+							{:else if dailyTab === 'today'}
+								Todayʼs cost across top {todayKeys.length} keys
+							{:else}
+								Daily cost across top {dailyKeys.length} keys
+							{/if}
+						</Card.Description>
+					</div>
+					<!-- Tab buttons -->
+					<div class="flex rounded-lg border border-border bg-background p-0.5">
+						<button
+							class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors {dailyTab === '30d' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}"
+							onclick={() => { dailyTab = '30d'; }}
+						>30d</button>
+						<button
+							class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors {dailyTab === 'cumulative' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}"
+							onclick={() => { dailyTab = 'cumulative'; }}
+						>Cumul.</button>
+						<button
+							class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors {dailyTab === 'today' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}"
+							onclick={() => { dailyTab = 'today'; }}
+						>Today</button>
 					</div>
 				</div>
 			</Card.Header>
