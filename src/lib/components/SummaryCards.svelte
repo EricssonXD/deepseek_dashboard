@@ -15,15 +15,12 @@
 	} = $props();
 
 	const topKey = $derived(keyList[0]);
-	const modelEntries = $derived(Object.entries(modelTotals).sort((a, b) => b[1] - a[1]));
-	const topModel = $derived(modelEntries[0]);
-	const modelCount = $derived(Object.keys(modelTotals).length);
 </script>
 
 <div class="px-6 pt-6">
 	{#if loading}
-		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-			{#each Array(4) as _}
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+			{#each Array(2) as _}
 				<Card>
 					<CardHeader>
 						<div class="h-3 w-20 animate-pulse rounded-sm bg-muted"></div>
@@ -49,45 +46,19 @@
 			</CardContent>
 		</Card>
 
-		<!-- Secondary metrics row -->
-		<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-			<Card>
-				<CardHeader>
-					<CardTitle class="text-sm font-medium text-foreground">API Keys</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<p class="text-3xl font-bold tabular-nums text-foreground">{keyList.length}</p>
-					{#if topKey}
-						<p class="mt-1 text-xs text-muted-foreground">{topKey.apiKeyName}</p>
-					{/if}
-				</CardContent>
-			</Card>
-
-			<Card>
-				<CardHeader>
-					<CardTitle class="text-sm font-medium text-foreground">Models</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<p class="text-3xl font-bold tabular-nums text-foreground">{modelCount}</p>
-					{#if topModel}
-						<p class="mt-1 text-xs text-muted-foreground">{topModel[0]}</p>
-					{/if}
-				</CardContent>
-			</Card>
-
-			<Card>
-				<CardHeader>
-					<CardTitle class="text-sm font-medium text-foreground">Top Key Cost</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<p class="text-3xl font-bold tabular-nums text-foreground">
-						${topKey ? topKey.cost.toFixed(4) : '0.0000'}
-					</p>
-					{#if topKey}
-						<p class="mt-1 text-xs text-muted-foreground">{topKey.apiKeyName}</p>
-					{/if}
-				</CardContent>
-			</Card>
-		</div>
+		<!-- Top key cost -->
+		<Card>
+			<CardHeader>
+				<CardTitle class="text-sm font-medium text-foreground">Top Key Cost</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<p class="text-3xl font-bold tabular-nums text-foreground">
+					${topKey ? topKey.cost.toFixed(4) : '0.0000'}
+				</p>
+				{#if topKey}
+					<p class="mt-1 text-xs text-muted-foreground">{topKey.apiKeyName}</p>
+				{/if}
+			</CardContent>
+		</Card>
 	{/if}
 </div>
