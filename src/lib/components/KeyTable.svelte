@@ -14,7 +14,7 @@
 </script>
 
 <div class="px-6 pb-6">
-	<h3 class="mb-3 text-sm text-foreground">API Key Breakdown</h3>
+	<h3 class="mb-3 text-sm font-medium text-foreground">API Key Breakdown</h3>
 	<div class="overflow-x-auto rounded-lg border border-border">
 		<Table>
 			<TableHeader>
