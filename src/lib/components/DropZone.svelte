@@ -53,7 +53,7 @@
 </script>
 
 <div
-	class="mx-6 mt-6 cursor-pointer rounded-lg border-2 border-dashed border-border px-6 py-10 text-center transition-colors hover:border-primary hover:bg-muted/50 {dragging ? 'border-primary bg-muted/50' : ''}"
+	class="mx-6 mt-6 cursor-pointer rounded-lg border-2 border-dashed border-border px-6 py-10 text-center transition-colors hover:border-primary hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none {dragging ? 'border-primary bg-muted/50' : ''}"
 	role="button"
 	tabindex="0"
 	onclick={() => fileInput?.click()}

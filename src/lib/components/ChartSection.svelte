@@ -72,7 +72,7 @@
 	const activeSeries = $derived(dailyTab === 'today' ? todaySeries : dailySeries);
 </script>
 
-<div class="grid grid-cols-[repeat(auto-fit,minmax(400px,1fr))] gap-4 px-6 pb-6">
+<div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 px-6 pb-6">
 	{#if loading}
 		<Card.Root>
 			<Card.Header>

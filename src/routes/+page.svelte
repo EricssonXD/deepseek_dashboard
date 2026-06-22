@@ -199,7 +199,7 @@
 			href="https://platform.deepseek.com/usage"
 			target="_blank"
 			rel="noopener"
-			class="inline-block rounded-md border border-border px-4 py-1.5 text-sm text-primary no-underline transition-colors hover:bg-muted"
+			class="inline-block rounded-md border border-border px-4 py-1.5 text-sm text-primary no-underline transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 		>
 			Download export from platform.deepseek.com/usage
 		</a>
