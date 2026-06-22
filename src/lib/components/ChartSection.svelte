@@ -57,8 +57,8 @@
 
 	// ── Bar ──
 	const topKeys = $derived(keyList.slice(0, 15));
-	const barData = $derived(topKeys.map((k) => ({ name: k.apiKeyName || k.apiKeyMasked, cost: k.cost })));
-	const barConfig = $derived<Chart.ChartConfig>({ cost: { label: 'Cost (USD)', color: 'var(--color-primary)' } });
+	const barData = $derived(topKeys.map((k, i) => ({ name: k.apiKeyName || k.apiKeyMasked, cost: k.cost, color: CHART_COLORS[i % CHART_COLORS.length] })));
+	const barConfig = $derived<Chart.ChartConfig>({ cost: { label: 'Cost (USD)', color: CHART_COLORS[0] } });
 	const totalBarCost = $derived(barData.reduce((s, d) => s + d.cost, 0));
 
 	// ── Pie ──
@@ -181,6 +181,7 @@
 						data={barData}
 						xScale={scaleBand().padding(0.25)}
 						x="name"
+						c="color"
 						axis="x"
 						series={[{ key: 'cost', label: barConfig.cost.label, color: barConfig.cost.color }]}
 						props={{
