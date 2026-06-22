@@ -29,15 +29,12 @@
 <div class="mx-6 mt-4 rounded-lg border border-border bg-card p-4">
 	<div class="flex flex-wrap items-end gap-3">
 		<div>
-			<label
-				for="fetchMonth"
-				class="mb-1 block text-xs font-medium text-muted-foreground"
-			>
+			<label for="fetchMonth" class="mb-1 block text-xs font-medium text-muted-foreground">
 				Month
 			</label>
 			<select
 				id="fetchMonth"
-				class="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+				class="h-9 w-20 appearance-none rounded-lg border border-input bg-background px-3 text-sm text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 				value={month}
 				onchange={(e) => onMonthChange(Number(e.currentTarget.value))}
 			>
@@ -48,15 +45,12 @@
 		</div>
 
 		<div>
-			<label
-				for="fetchYear"
-				class="mb-1 block text-xs font-medium text-muted-foreground"
-			>
+			<label for="fetchYear" class="mb-1 block text-xs font-medium text-muted-foreground">
 				Year
 			</label>
 			<select
 				id="fetchYear"
-				class="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+				class="h-9 w-24 appearance-none rounded-lg border border-input bg-background px-3 text-sm text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 				value={year}
 				onchange={(e) => onYearChange(Number(e.currentTarget.value))}
 			>
@@ -66,7 +60,7 @@
 			</select>
 		</div>
 
-		<Button onclick={onFetch} disabled={isDisabled}>
+		<Button onclick={onFetch} disabled={isDisabled} size="default">
 			{status.type === 'loading' ? 'Fetching...' : 'Fetch from API'}
 		</Button>
 	</div>
@@ -82,12 +76,9 @@
 				{status.message}
 			</p>
 			{#if status.type === 'error' && onRetry}
-				<button
-					class="text-xs font-medium text-primary underline hover:no-underline"
-					onclick={onRetry}
-				>
+				<Button variant="ghost" size="xs" onclick={onRetry}>
 					Retry
-				</button>
+				</Button>
 			{/if}
 		</div>
 	{/if}

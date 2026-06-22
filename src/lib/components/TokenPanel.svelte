@@ -43,10 +43,8 @@
 				{#if isConnected}
 					Connected ({tokenPrefix})
 					<button
-						class="ml-2 text-xs text-muted-foreground underline hover:text-foreground"
-						onclick={() => {
-							showEdit = !showEdit;
-						}}
+						class="ml-2 text-xs font-medium text-muted-foreground underline hover:text-foreground"
+						onclick={() => { showEdit = !showEdit; }}
 					>
 						{showEdit ? 'cancel' : 'change'}
 					</button>
@@ -61,7 +59,7 @@
 			{#if bookmarkletHref}
 				<a
 					href={bookmarkletHref}
-					class="inline-block shrink-0 cursor-grab select-none rounded-md bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground no-underline"
+					class="inline-block shrink-0 cursor-grab select-none rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground no-underline transition-colors hover:bg-primary/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 					draggable="true"
 					title="Drag this to your bookmarks bar. Then go to platform.deepseek.com and click it."
 				>
@@ -80,9 +78,9 @@
 				bind:value={manualToken}
 				onkeydown={handleKeydown}
 				placeholder="Paste token from bookmarklet here..."
-				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+				class="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 			/>
-			<Button size="sm" onclick={handlePaste} disabled={!manualToken.trim()}>Save</Button>
+			<Button size="default" onclick={handlePaste} disabled={!manualToken.trim()}>Save</Button>
 		</div>
 	{:else if !showEdit}
 		<p class="mt-2 text-xs text-muted-foreground">
