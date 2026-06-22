@@ -146,8 +146,8 @@ export function buildDailyUsage(
 	const entries = Object.entries(dateMap).sort(([a], [b]) => a.localeCompare(b));
 	if (entries.length === 0) return { dailyData: [], dailyKeys: topKeys };
 
-	const minDate = new Date(entries[0][0] + 'T00:00:00');
-	const maxDate = new Date(entries[entries.length - 1][0] + 'T00:00:00');
+	const minDate = new Date(entries[0][0] + 'T00:00:00Z');
+	const maxDate = new Date(entries[entries.length - 1][0] + 'T00:00:00Z');
 
 	const dailyData: DailyKeyUsage[] = [];
 	const cursor = new Date(minDate);
