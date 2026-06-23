@@ -233,7 +233,7 @@
 	</div>
 {/if}
 
-<div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5 px-6 pb-6">
+<div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5 px-6 pt-6 pb-6">
 	{#if loading}
 		<div transition:fade={{ duration: 150 }}>
 			<Card.Root>
