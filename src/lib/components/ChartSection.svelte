@@ -187,7 +187,7 @@
 							xAxis: {
 									format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 								},
-								yAxis: { format: (v: number) => '$' + (v < 0.01 ? v.toFixed(4) : v < 1 ? v.toFixed(3) : v.toFixed(2)) }
+								yAxis: { format: (v: number) => '$' + v.toFixed(2), tickSpacing: 64, tickLength: 0 }
 						}}
 					>
 						{#snippet tooltip()}<Chart.Tooltip hideLabel />{/snippet}
@@ -247,7 +247,7 @@
 							bars: { stroke: 'none', rounded: 'all', radius: 8, motion: { type: 'tween', duration: 500, easing: cubicInOut } },
 							highlight: { area: { fill: 'none' } },
 							xAxis: { format: (d: string) => (d.length > 12 ? d.slice(0, 12) + '…' : d) },
-								yAxis: { format: (v: number) => '$' + (v < 0.01 ? v.toFixed(4) : v < 1 ? v.toFixed(3) : v.toFixed(2)) }
+								yAxis: { format: (v: number) => '$' + v.toFixed(2), tickSpacing: 64, tickLength: 0 }
 						}}
 					>
 						{#snippet tooltip()}<Chart.Tooltip hideLabel />{/snippet}
