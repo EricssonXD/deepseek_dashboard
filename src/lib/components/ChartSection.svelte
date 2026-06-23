@@ -263,7 +263,7 @@
 			</Card.Header>
 			<Card.Content>
 				{#if barData.length > 0}
-					<Chart.Container config={barConfig}>
+					<Chart.Container config={barConfig} class="max-h-[320px]">
 						<BarChart
 							data={barData}
 							xScale={scaleBand().padding(0.25)}
@@ -310,7 +310,7 @@
 			</Card.Header>
 			<Card.Content class="flex-1">
 				{#if pieData.length > 0}
-					<Chart.Container config={pieConfig} class="mx-auto max-w-1/2 aspect-square">
+					<Chart.Container config={pieConfig} class="mx-auto max-w-1/2 max-w-[280px] aspect-square">
 						<PieChart
 							data={pieData}
 							key="model"
