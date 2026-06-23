@@ -324,7 +324,7 @@
 								<Arc {...props}>
 									{#snippet children({ getArcTextProps })}
 										<Text
-											value={visibleData[index].cost}
+											value={'$' + visibleData[index].cost.toFixed(2)}
 											{...getArcTextProps('outer', { startOffset: '50%', outerPadding: 10 })}
 											class="fill-foreground"
 										/>
