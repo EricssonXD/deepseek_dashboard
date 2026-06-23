@@ -151,7 +151,7 @@
 					<div class="h-3 w-64 animate-pulse rounded-sm bg-muted"></div>
 				</Card.Header>
 				<Card.Content>
-					<div class="h-[350px] animate-pulse rounded-lg bg-muted"></div>
+					<div class="h-87.5 animate-pulse rounded-lg bg-muted"></div>
 				</Card.Content>
 			</Card.Root>
 		</div>
@@ -197,7 +197,7 @@
 				</div>
 			</Card.Header>
 			<Card.Content>
-				<Chart.Container config={activeConfig} class="max-h-[350px]">
+				<Chart.Container config={activeConfig} class="max-h-87.5">
 					<LineChart
 						points={{ r: 4 }}
 						data={activeData}
@@ -263,7 +263,7 @@
 			</Card.Header>
 			<Card.Content>
 				{#if barData.length > 0}
-					<Chart.Container config={barConfig} class="max-h-[320px]">
+					<Chart.Container config={barConfig} class="max-h-80">
 						<BarChart
 							data={barData}
 							xScale={scaleBand().padding(0.25)}
@@ -310,7 +310,7 @@
 			</Card.Header>
 			<Card.Content class="flex-1">
 				{#if pieData.length > 0}
-					<Chart.Container config={pieConfig} class="mx-auto max-w-1/2 max-w-[280px] aspect-square">
+					<Chart.Container config={pieConfig} class="mx-auto max-w-1/2 aspect-square">
 						<PieChart
 							data={pieData}
 							key="model"

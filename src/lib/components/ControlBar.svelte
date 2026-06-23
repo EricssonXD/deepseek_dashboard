@@ -45,7 +45,9 @@
 	$effect(() => {
 		if (isConnected) {
 			connectionPulse = true;
-			const t = setTimeout(() => { connectionPulse = false; }, 500);
+			const t = setTimeout(() => {
+				connectionPulse = false;
+			}, 500);
 			return () => clearTimeout(t);
 		}
 	});
@@ -97,15 +99,25 @@
 
 	// ── Derived ──
 	const fetchDisabled = $derived(isFetching || !isConnected);
-	const monthLabel = $derived(new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }));
+	const monthLabel = $derived(
+		new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+	);
 
 	function prevMonth() {
-		if (month === 1) { onMonthChange(12); onYearChange(year - 1); }
-		else { onMonthChange(month - 1); }
+		if (month === 1) {
+			onMonthChange(12);
+			onYearChange(year - 1);
+		} else {
+			onMonthChange(month - 1);
+		}
 	}
 	function nextMonth() {
-		if (month === 12) { onMonthChange(1); onYearChange(year + 1); }
-		else { onMonthChange(month + 1); }
+		if (month === 12) {
+			onMonthChange(1);
+			onYearChange(year + 1);
+		} else {
+			onMonthChange(month + 1);
+		}
 	}
 
 	// ── Month picker ──
@@ -113,9 +125,24 @@
 	let pickerYear = $state(year);
 	let pickerRef: HTMLDivElement | undefined = $state();
 
-	const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	const MONTH_NAMES = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec'
+	];
 
-	$effect(() => { pickerYear = year; });
+	$effect(() => {
+		pickerYear = year;
+	});
 
 	function openPicker() {
 		showPicker = true;
@@ -149,12 +176,15 @@
 </script>
 
 <div class="mx-6 mt-6 rounded-xl border border-border/50 bg-card">
-
 	<!-- ═══ Zone 1: Connection status ═══ -->
 	<div class="px-5 py-4">
 		<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
 			<span
-				class="inline-flex size-2.5 shrink-0 rounded-full ring-2 transition-all duration-300 {isConnected ? 'bg-success ring-success/30' : 'bg-destructive ring-destructive/30'} {connectionPulse ? 'scale-125 ring-success/50' : ''}"
+				class="inline-flex size-2.5 shrink-0 rounded-full ring-2 transition-all duration-300 {isConnected
+					? 'bg-success ring-success/30'
+					: 'bg-destructive ring-destructive/30'} {connectionPulse
+					? 'scale-125 ring-success/50'
+					: ''}"
 				aria-hidden="true"
 			></span>
 
@@ -163,14 +193,17 @@
 				<span class="font-mono text-xs text-muted-foreground">{tokenPrefix}</span>
 				<button
 					class="text-xs font-medium text-primary hover:underline"
-					onclick={() => { showEdit = true; }}
-				>change</button>
-
+					onclick={() => {
+						showEdit = true;
+					}}>change</button
+				>
 			{:else}
-				<span class="text-sm font-semibold {isConnected ? 'text-foreground' : 'text-muted-foreground'}">
+				<span
+					class="text-sm font-semibold {isConnected ? 'text-foreground' : 'text-muted-foreground'}"
+				>
 					{isConnected ? 'Change token' : 'No token'}
 				</span>
-				<div class="flex w-full gap-2 sm:w-auto sm:min-w-[360px]">
+				<div class="flex w-full gap-2 sm:w-auto sm:min-w-90">
 					<input
 						type="text"
 						bind:value={manualToken}
@@ -180,12 +213,17 @@
 						autocomplete="off"
 						spellcheck="false"
 					/>
-					<Button size="sm" onclick={handleTokenSubmit} disabled={!manualToken.trim()}>Connect</Button>
+					<Button size="sm" onclick={handleTokenSubmit} disabled={!manualToken.trim()}
+						>Connect</Button
+					>
 					{#if isConnected}
 						<button
 							class="shrink-0 text-xs text-muted-foreground hover:text-foreground"
-							onclick={() => { showEdit = false; manualToken = ''; }}
-						>cancel</button>
+							onclick={() => {
+								showEdit = false;
+								manualToken = '';
+							}}>cancel</button
+						>
 					{/if}
 				</div>
 			{/if}
@@ -200,15 +238,25 @@
 					draggable="true"
 					title="Drag to bookmarks bar. Visit platform.deepseek.com and click it to capture your token."
 				>
-					<svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+					<svg
+						class="size-4"
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="2"
+						stroke="currentColor"
+						aria-hidden="true"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+						/>
 					</svg>
 					DeepSeek Token
 				</a>
 				<div>
-					<p class="text-sm font-medium text-foreground">
-						Drag this to your bookmarks bar
-					</p>
+					<p class="text-sm font-medium text-foreground">Drag this to your bookmarks bar</p>
 					<p class="text-xs text-muted-foreground">
 						Then visit platform.deepseek.com, click the bookmark, and paste the token here.
 					</p>
@@ -222,25 +270,51 @@
 		<div class="flex flex-col gap-4 sm:flex-row sm:gap-6">
 			<!-- API fetch -->
 			<div class="flex flex-wrap items-center gap-2 sm:flex-1">
-				<div class="relative inline-flex items-center rounded-lg border border-border bg-background">
+				<div
+					class="relative inline-flex items-center rounded-lg border border-border bg-background"
+				>
 					<button
 						class="flex size-8 items-center justify-center rounded-l-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring focus-visible:outline-none"
 						onclick={prevMonth}
 						aria-label="Previous month"
 					>
-						<svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+						<svg
+							class="size-4"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="2"
+							stroke="currentColor"
+							><path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M15.75 19.5 8.25 12l7.5-7.5"
+							/></svg
+						>
 					</button>
 					<button
 						class="min-w-[8.5rem] px-3 text-center text-sm font-medium text-foreground tabular-nums transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring focus-visible:outline-none"
 						onclick={openPicker}
-						aria-label="Pick month and year"
-					>{monthLabel}</button>
+						aria-label="Pick month and year">{monthLabel}</button
+					>
 					<button
 						class="flex size-8 items-center justify-center rounded-r-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring focus-visible:outline-none"
 						onclick={nextMonth}
 						aria-label="Next month"
 					>
-						<svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+						<svg
+							class="size-4"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="2"
+							stroke="currentColor"
+							><path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="m8.25 4.5 7.5 7.5-7.5 7.5"
+							/></svg
+						>
 					</button>
 
 					<!-- Month/year picker popover -->
@@ -256,18 +330,46 @@
 							<div class="mb-2 flex items-center justify-between">
 								<button
 									class="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-									onclick={() => { pickerYear--; }}
+									onclick={() => {
+										pickerYear--;
+									}}
 									aria-label="Previous year"
 								>
-									<svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+									<svg
+										class="size-3.5"
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke-width="2"
+										stroke="currentColor"
+										><path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="M15.75 19.5 8.25 12l7.5-7.5"
+										/></svg
+									>
 								</button>
 								<span class="text-sm font-semibold text-foreground tabular-nums">{pickerYear}</span>
 								<button
 									class="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-									onclick={() => { pickerYear++; }}
+									onclick={() => {
+										pickerYear++;
+									}}
 									aria-label="Next year"
 								>
-									<svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+									<svg
+										class="size-3.5"
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke-width="2"
+										stroke="currentColor"
+										><path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="m8.25 4.5 7.5 7.5-7.5 7.5"
+										/></svg
+									>
 								</button>
 							</div>
 							<!-- Month grid -->
@@ -277,8 +379,8 @@
 									<button
 										class="rounded-lg px-2 py-1.5 text-xs font-medium transition-colors
 											{m === month && pickerYear === year
-												? 'bg-primary text-primary-foreground'
-												: 'text-foreground hover:bg-muted'}"
+											? 'bg-primary text-primary-foreground'
+											: 'text-foreground hover:bg-muted'}"
 										onclick={() => selectMonth(m)}
 									>
 										{name}
@@ -305,7 +407,9 @@
 					>
 						{status.message}
 						{#if status.type === 'error' && onRetry}
-							<button class="ml-1.5 font-medium text-primary hover:underline" onclick={onRetry}>Retry</button>
+							<button class="ml-1.5 font-medium text-primary hover:underline" onclick={onRetry}
+								>Retry</button
+							>
 						{/if}
 					</span>
 				{/if}
@@ -316,24 +420,52 @@
 
 			<!-- File drop -->
 			<div
-				class="flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-primary/15 bg-background px-4 py-3 text-center transition-all hover:border-primary/50 hover:bg-primary/3 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:flex-1 {dragging ? 'border-primary bg-primary/5' : ''}"
+				class="flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-primary/15 bg-background px-4 py-3 text-center transition-all hover:border-primary/50 hover:bg-primary/3 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:flex-1 {dragging
+					? 'border-primary bg-primary/5'
+					: ''}"
 				role="button"
 				tabindex="0"
 				onclick={() => fileInput?.click()}
-				ondragover={(e) => { e.preventDefault(); dragging = true; }}
-				ondragleave={() => { dragging = false; }}
+				ondragover={(e) => {
+					e.preventDefault();
+					dragging = true;
+				}}
+				ondragleave={() => {
+					dragging = false;
+				}}
 				ondrop={handleDrop}
-				onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInput?.click(); }}
+				onkeydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') fileInput?.click();
+				}}
 			>
-				<svg class="mb-0.5 size-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+				<svg
+					class="mb-0.5 size-5 text-muted-foreground"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					aria-hidden="true"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+					/>
 				</svg>
 				<p class="text-xs font-medium text-foreground">Drop ZIP files here</p>
 				<p class="text-[0.7rem] text-muted-foreground">or click to browse</p>
 				{#if duplicateWarning}
 					<p class="mt-1 text-[0.7rem] text-destructive">{duplicateWarning}</p>
 				{/if}
-				<input type="file" bind:this={fileInput} accept=".zip" multiple class="hidden" onchange={handleFileChange} />
+				<input
+					type="file"
+					bind:this={fileInput}
+					accept=".zip"
+					multiple
+					class="hidden"
+					onchange={handleFileChange}
+				/>
 			</div>
 		</div>
 	</div>
@@ -347,12 +479,26 @@
 				draggable="true"
 				title="Drag to bookmarks bar to refresh your token."
 			>
-				<svg class="size-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+				<svg
+					class="size-3"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="2"
+					stroke="currentColor"
+					aria-hidden="true"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+					/>
 				</svg>
 				DeepSeek Token
 			</a>
-			<span class="hidden text-[0.7rem] text-muted-foreground/60 sm:inline">Drag to bookmarks bar</span>
+			<span class="hidden text-[0.7rem] text-muted-foreground/60 sm:inline"
+				>Drag to bookmarks bar</span
+			>
 			<span class="text-[0.7rem] text-muted-foreground/60">·</span>
 		{/if}
 		<a
@@ -364,5 +510,4 @@
 			Download export from platform.deepseek.com/usage
 		</a>
 	</div>
-
 </div>
