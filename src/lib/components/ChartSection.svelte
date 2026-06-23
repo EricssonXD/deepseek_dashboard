@@ -181,6 +181,7 @@
 						x="date"
 						xScale={scaleUtc()}
 						series={activeSeries}
+							yPadding={[16, 4]}
 						props={{
 							spline: { curve: curveMonotoneX, motion: 'tween', strokeWidth: 2 },
 							highlight: { points: { motion: 'none', r: 6 } },
@@ -243,6 +244,7 @@
 						xScale={scaleBand().padding(0.25)}
 						x="name"
 						series={barSeries}
+							yPadding={[16, 4]}
 						props={{
 							bars: { stroke: 'none', rounded: 'all', radius: 8, motion: { type: 'tween', duration: 500, easing: cubicInOut } },
 							highlight: { area: { fill: 'none' } },
