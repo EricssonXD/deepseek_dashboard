@@ -81,7 +81,6 @@
 	const barData = $derived(
 		topKeys.map((k) => {
 			const row: Record<string, string | number> = { name: k.apiKeyName || k.apiKeyMasked };
-			for (const o of topKeys) row[o.apiKeyName || o.apiKeyMasked] = 0;
 			row[k.apiKeyName || k.apiKeyMasked] = k.cost;
 			return row;
 		})
