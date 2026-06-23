@@ -180,14 +180,14 @@
 						data={activeData}
 						x="date"
 						xScale={scaleUtc()}
-						axis="x"
 						series={activeSeries}
 						props={{
 							spline: { curve: curveMonotoneX, motion: 'tween', strokeWidth: 2 },
 							highlight: { points: { motion: 'none', r: 6 } },
 							xAxis: {
-								format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-							}
+									format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+								},
+								yAxis: { format: (v: number) => '$' + (v < 0.01 ? v.toFixed(4) : v < 1 ? v.toFixed(3) : v.toFixed(2)) }
 						}}
 					>
 						{#snippet tooltip()}<Chart.Tooltip hideLabel />{/snippet}
@@ -242,12 +242,12 @@
 						data={barData}
 						xScale={scaleBand().padding(0.25)}
 						x="name"
-						axis="x"
 						series={barSeries}
 						props={{
 							bars: { stroke: 'none', rounded: 'all', radius: 8, motion: { type: 'tween', duration: 500, easing: cubicInOut } },
 							highlight: { area: { fill: 'none' } },
-							xAxis: { format: (d: string) => (d.length > 12 ? d.slice(0, 12) + '…' : d) }
+							xAxis: { format: (d: string) => (d.length > 12 ? d.slice(0, 12) + '…' : d) },
+								yAxis: { format: (v: number) => '$' + (v < 0.01 ? v.toFixed(4) : v < 1 ? v.toFixed(3) : v.toFixed(2)) }
 						}}
 					>
 						{#snippet tooltip()}<Chart.Tooltip hideLabel />{/snippet}
