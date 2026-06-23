@@ -41,16 +41,20 @@
 					tokenTypes[r.type] = (tokenTypes[r.type] || 0) + r.amount;
 				}
 			}
-			return {
+				const hit = tokenTypes['input_cache_hit_tokens'] || 0;
+				const miss = tokenTypes['input_cache_miss_tokens'] || 0;
+				const totalInput = hit + miss;
+				return {
 				apiKeyName: key.apiKeyName,
 				apiKeyMasked: key.apiKeyMasked,
 				models: key.models.join(', '),
 				cost: key.cost,
 				costPct: grandTotal ? ((key.cost / grandTotal) * 100).toFixed(1) : '0',
 				outputTokens: tokenTypes['output_tokens'] || 0,
-				inputCacheHit: tokenTypes['input_cache_hit_tokens'] || 0,
-				inputCacheMiss: tokenTypes['input_cache_miss_tokens'] || 0,
-				requestCount: tokenTypes['request_count'] || 0
+					inputCacheHit: hit,
+					inputCacheMiss: miss,
+					cacheHitRate: totalInput > 0 ? ((hit / totalInput) * 100).toFixed(1) + '%' : '--',
+					requestCount: tokenTypes['request_count'] || 0
 			};
 		})
 	);

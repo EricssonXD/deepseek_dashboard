@@ -28,7 +28,8 @@
 					<TableHead class="text-right text-xs text-muted-foreground">Output Tokens</TableHead>
 					<TableHead class="text-right text-xs text-muted-foreground">Cache Hit</TableHead>
 					<TableHead class="text-right text-xs text-muted-foreground">Cache Miss</TableHead>
-					<TableHead class="text-right text-xs text-muted-foreground">Requests</TableHead>
+						<TableHead class="text-right text-xs text-muted-foreground">Hit Rate</TableHead>
+						<TableHead class="text-right text-xs text-muted-foreground">Requests</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
@@ -43,6 +44,7 @@
 							<TableCell class="text-right"><div class="ml-auto h-4 w-20 animate-pulse rounded-sm bg-muted"></div></TableCell>
 							<TableCell class="text-right"><div class="ml-auto h-4 w-20 animate-pulse rounded-sm bg-muted"></div></TableCell>
 							<TableCell class="text-right"><div class="ml-auto h-4 w-20 animate-pulse rounded-sm bg-muted"></div></TableCell>
+							<TableCell class="text-right"><div class="ml-auto h-4 w-12 animate-pulse rounded-sm bg-muted"></div></TableCell>
 							<TableCell class="text-right"><div class="ml-auto h-4 w-16 animate-pulse rounded-sm bg-muted"></div></TableCell>
 						</TableRow>
 					{/each}
@@ -76,9 +78,12 @@
 							</TableCell>
 							<TableCell class="text-right tabular-nums text-sm">
 								{row.inputCacheMiss.toLocaleString()}
-							</TableCell>
-							<TableCell class="text-right tabular-nums text-sm">
-								{row.requestCount.toLocaleString()}
+								</TableCell>
+								<TableCell class="text-right tabular-nums text-sm">
+									{row.cacheHitRate}
+								</TableCell>
+								<TableCell class="text-right tabular-nums text-sm">
+									{row.requestCount.toLocaleString()}
 							</TableCell>
 						</TableRow>
 					{/each}

@@ -31,6 +31,7 @@ export interface KeyDetail {
 	outputTokens: number;
 	inputCacheHit: number;
 	inputCacheMiss: number;
+	cacheHitRate: string;
 	requestCount: number;
 }
 
