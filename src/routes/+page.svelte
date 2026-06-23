@@ -232,9 +232,8 @@
 				<div class="grid gap-4 text-left sm:grid-cols-2">
 					<div
 						class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-primary/30"
-						in:fly={{ y: 8, duration: 250, delay: 0, easing: quartOut }}
-					>
-						<div class="mb-2 text-xs font-medium text-muted-foreground">Option 1</div>
+						in:fly={{ y: 8, duration: 250, delay: 0, easing: quartOut }} out:fly={{ y: -4, duration: 120 }}>
+							<div class="mb-2 text-xs font-medium text-muted-foreground">Option 1</div>
 						<p class="text-sm text-foreground">
 							Drag the <strong class="text-primary">DeepSeek Token</strong> bookmarklet
 							to your bookmarks bar, then click it on the DeepSeek usage page.
@@ -246,9 +245,8 @@
 
 					<div
 						class="rounded-xl border border-border/40 bg-background p-4 transition-colors hover:border-primary/30"
-						in:fly={{ y: 8, duration: 250, delay: 50, easing: quartOut }}
-					>
-						<div class="mb-2 text-xs font-medium text-muted-foreground">Option 2</div>
+						in:fly={{ y: 8, duration: 250, delay: 50, easing: quartOut }} out:fly={{ y: -4, duration: 120 }}>
+							<div class="mb-2 text-xs font-medium text-muted-foreground">Option 2</div>
 						<p class="text-sm text-foreground">
 							Download your usage ZIP from
 							<a

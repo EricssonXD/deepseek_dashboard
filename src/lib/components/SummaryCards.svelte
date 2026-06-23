@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import type { KeySummary } from '$lib/types/dashboard';
 
@@ -22,16 +23,18 @@
 
 <div class="px-6 pt-6">
 	{#if loading}
-		<Card>
-			<CardHeader>
+			<div transition:fade={{ duration: 150 }}>
+			<Card>
+				<CardHeader>
 				<div class="h-3 w-20 animate-pulse rounded-sm bg-muted"></div>
 			</CardHeader>
 			<CardContent>
 				<div class="mb-1 h-8 w-28 animate-pulse rounded-sm bg-muted"></div>
 				<div class="h-3 w-12 animate-pulse rounded-sm bg-muted"></div>
 			</CardContent>
-		</Card>
-	{:else}
+			</Card>
+			</div>
+		{:else}
 		<!-- Hero: Total Cost + Top Key Cost side by side -->
 		<Card class="mb-4 border-primary/40 bg-primary/6">
 			<CardHeader class="pb-2">

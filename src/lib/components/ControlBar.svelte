@@ -40,6 +40,16 @@
 	let manualToken = $state('');
 	let showEdit = $state(false);
 
+	// ── Connection pulse ──
+	let connectionPulse = $state(false);
+	$effect(() => {
+		if (isConnected) {
+			connectionPulse = true;
+			const t = setTimeout(() => { connectionPulse = false; }, 500);
+			return () => clearTimeout(t);
+		}
+	});
+
 	function handleTokenSubmit() {
 		if (manualToken.trim()) {
 			onTokenPaste(manualToken.trim());
@@ -144,7 +154,7 @@
 	<div class="px-5 py-4">
 		<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
 			<span
-				class="inline-flex size-2.5 shrink-0 rounded-full ring-2 {isConnected ? 'bg-success ring-success/30' : 'bg-destructive ring-destructive/30'}"
+				class="inline-flex size-2.5 shrink-0 rounded-full ring-2 transition-all duration-300 {isConnected ? 'bg-success ring-success/30' : 'bg-destructive ring-destructive/30'} {connectionPulse ? 'scale-125 ring-success/50' : ''}"
 				aria-hidden="true"
 			></span>
 

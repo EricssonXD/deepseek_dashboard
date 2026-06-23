@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition';
 	import {
 		Table,
 		TableBody,
@@ -33,7 +34,7 @@
 			<TableBody>
 				{#if loading}
 					{#each Array(5) as _}
-						<TableRow class="border-border">
+						<TableRow class="border-border" >
 							<TableCell><div class="h-4 w-32 animate-pulse rounded-sm bg-muted"></div></TableCell>
 							<TableCell><div class="h-4 w-24 animate-pulse rounded-sm bg-muted"></div></TableCell>
 							<TableCell><div class="h-5 w-40 animate-pulse rounded-sm bg-muted"></div></TableCell>

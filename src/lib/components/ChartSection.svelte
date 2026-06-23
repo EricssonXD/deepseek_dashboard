@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition';
 	import { Arc, BarChart, LineChart, PieChart, Text } from 'layerchart';
 	import { scaleBand, scaleUtc } from 'd3-scale';
 	import { curveMonotoneX } from 'd3-shape';
@@ -131,8 +132,9 @@
 
 <!-- Consumption tabs: 30d / Cumulative / Today -->
 {#if loading}
-	<div class="px-6 pt-6 pb-6">
-		<Card.Root>
+		<div transition:fade={{ duration: 150 }}>
+		<div class="px-6 pt-6 pb-6">
+			<Card.Root>
 			<Card.Header>
 				<div class="mb-1 h-4 w-48 animate-pulse rounded-sm bg-muted"></div>
 				<div class="h-3 w-64 animate-pulse rounded-sm bg-muted"></div>
@@ -141,8 +143,9 @@
 				<div class="h-[350px] animate-pulse rounded-lg bg-muted"></div>
 			</Card.Content>
 		</Card.Root>
-	</div>
-{:else if dailyData.length > 0}
+		</div>
+		</div>
+	{:else if dailyData.length > 0}
 	<div class="px-6 pt-6 pb-6">
 		<Card.Root>
 			<Card.Header>
@@ -206,8 +209,9 @@
 
 <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5 px-6 pb-6">
 	{#if loading}
-		<Card.Root>
-			<Card.Header>
+			<div transition:fade={{ duration: 150 }}>
+			<Card.Root>
+				<Card.Header>
 				<div class="mb-1 h-4 w-32 animate-pulse rounded-sm bg-muted"></div>
 				<div class="h-3 w-48 animate-pulse rounded-sm bg-muted"></div>
 			</Card.Header>
@@ -223,8 +227,9 @@
 			<Card.Content class="flex-1">
 				<div class="mx-auto aspect-square h-64 animate-pulse rounded-full bg-muted"></div>
 			</Card.Content>
-		</Card.Root>
-	{:else}
+			</Card.Root>
+			</div>
+		{:else}
 		<Card.Root>
 		<Card.Header>
 			<Card.Title class="text-sm font-semibold text-foreground">Cost per API Key</Card.Title>
